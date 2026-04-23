@@ -138,7 +138,7 @@ button:disabled,
     background: linear-gradient(to bottom, #1e8449, #196f3d) !important; 
 }
 
-/* 🔴 取消ボタンの色 */
+/* 🔴 取消ボタンの色 　*/
 #reservationTable .cancel-btn { 
     background: linear-gradient(to bottom, #e74c3c, #c0392b) !important; 
 }
