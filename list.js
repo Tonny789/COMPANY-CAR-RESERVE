@@ -4,7 +4,8 @@ if (window.__LIST_JS_LOADED__) {
   window.__LIST_JS_LOADED__ = true;
 }
 
-const LOGIC_APPS_RESERVATION_URL = "https://prod-40.japaneast.logic.azure.com:443/workflows/ab8f204d2d5241058f47f378bd828369/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=ujbLd062IzIlxfgzzf4V9ny6bLnFmGhPPcT_WcpK3rA";
+// 🔴 最新の「社有車一覧取得用」URLへ差し替え完了
+const LOGIC_APPS_RESERVATION_URL = "https://prod-19.eastasia.logic.azure.com:443/workflows/d5f1c6f77ab64df687dd04be7dbbddc4/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=7kzTEsa2rrimqWeFIYoRLGvzR-NSCElFzlubc3kAUgg";
 // =========================
 // ホームページ起動チェック（allowed:false → 起動停止）
 // =========================
@@ -307,7 +308,7 @@ async function fetchReservations(startKey, endKey, roomFilter) {
   // Dataverseに合わせてハイフンなしの 20260412 形式で条件を作成
   let filter = `cr15f_yoyaku_taishobi ge '${startKey}' and cr15f_yoyaku_taishobi le '${endKey}'`;
   if (roomFilter) {
-    // 旧 cr15f_room -> 新 cr15f_name
+    // 🔴 修正：フローへ送る「部屋番号」の列名を「予約者名(cr15f_name)」に変更
     filter += ` and cr15f_name eq '${roomFilter}'`;
   }
 
@@ -321,7 +322,7 @@ async function fetchReservations(startKey, endKey, roomFilter) {
       },
       body: JSON.stringify({ 
         filter: filter,
-        // 旧 cr15f_erea -> 新 cr15f_model
+        // 🔴 修正：フローへ送る並び替え指示を「車種(cr15f_model)」に変更
         orderby: "cr15f_yoyaku_taishobi asc, cr15f_model asc, cr15f_time asc"
       })
     });
@@ -344,7 +345,7 @@ async function fetchReservations(startKey, endKey, roomFilter) {
 // 2. ID指定で1件取得
 async function fetchReservationById(id) {
   const url = LOGIC_APPS_RESERVATION_URL;
-  // 旧 cr15f_gaveid -> 新 cr15f_company_careid
+  // 🔴 修正：フローへ送るIDの列名を「社有車予約ID(cr15f_company_careid)」に変更
   const filter = `cr15f_company_careid eq '${id}'`;
   const res = await fetch(url, {
     method: "POST",
@@ -569,7 +570,7 @@ function renderReservationList(records, mode, loginId) {
     tr.style.display = ""; 
 
     const dateKey = item.cr15f_yoyaku_taishobi || "";
-    // 旧 cr15f_erea -> 新 cr15f_model
+    // 🔴 修正：描画対象を「車種(cr15f_model)」に変更
     const currentArea = item.cr15f_model || "-";
 
     // --- 日付の表示判定 ---
@@ -587,7 +588,7 @@ function renderReservationList(records, mode, loginId) {
     }
 
     // --- エリア（車種）の表示判定 ---
-    // 旧 .reservation-area -> 新 .reservation-model
+    // 🔴 修正：クラス名を「reservation-model」に変更
     const areaCell = tr.querySelector(".reservation-model");
     if (currentArea === lastArea) {
       areaCell.textContent = "";
@@ -599,14 +600,14 @@ function renderReservationList(records, mode, loginId) {
     // --- 各項目の流し込み ---
     tr.querySelector(".reservation-time").textContent = item.cr15f_time || "-";
     tr.querySelector(".reservation-status").textContent = item.cr15f_yoyakustatus || "-";
-    // 旧 .reservation-room (cr15f_room) -> 新 .reservation-name (cr15f_name)
+    // 🔴 修正：表示対象を「予約者名(cr15f_name)」に変更。クラス名も「reservation-name」へ
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus === "予約済み" ? item.cr15f_name || "-" : "-";
 
     // --- ボタンの制御（最新・安定版） ---
     const reserveBtn = tr.querySelector(".reserve-btn");
     const cancelBtn = tr.querySelector(".cancel-btn");
-    // 旧 cr15f_gaveid -> 新 cr15f_company_careid
+    // 🔴 修正：ID列名を「社有車予約ID(cr15f_company_careid)」に変更
     const recordId = item.cr15f_company_careid;
     const status = item.cr15f_yoyakustatus;
 
@@ -648,7 +649,7 @@ function getRowDetail(row) {
   // エリア（車種）を探して遡る
   let areaRow = row;
   while (areaRow) {
-    // 旧 .reservation-area -> 新 .reservation-model
+    // 🔴 修正：クラス名を「reservation-model」に変更
     areaText = areaRow.querySelector(".reservation-model").textContent.trim();
     if (areaText) break;
     areaRow = areaRow.previousElementSibling;
@@ -961,7 +962,7 @@ if (submitLoginBtn) {
 
       // AzureからのResponse（status: "OK"など）を判定
       if (result.status === "OK" || result.status === "success") {
-        showAlert(result.message || "パスワードを正常に変更しました。 ");
+        showAlert(result.message || "パスワードを正常に変更しました。");
         // フォームを閉じてクリア
         passwordChangeForm.style.display = "none";
         passwordChangeForm.style.visibility = "hidden";
