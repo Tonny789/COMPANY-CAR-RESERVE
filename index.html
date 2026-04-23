@@ -77,8 +77,7 @@
       <button id="logoutBtn" class="btn btn-warning" style="display: none;">ログオフ</button>
       <span id="roomDisplay" style="font-size: 15px; font-weight: bold; color: #333; white-space: nowrap;">未ログオン状態です</span>
       
-      <button id="passwordChangeBtn" class="btn btn-secondary" style="display: none; font-size: 11px !important; padding: 2px 8px !important; height: auto !important;">パスワード変更</button>
-    </div>
+      </div>
 
     <form id="loginForm" method="post" style="display: none; visibility: hidden; margin-bottom: 5px;">
         <div style="display: flex; justify-content: center; align-items: center; gap: 5px;">
@@ -89,14 +88,7 @@
     </form>
 
     <div style="display: flex; justify-content: center; width: 100%;">
-        <form id="passwordChangeForm" method="post" style="display: none; visibility: hidden; margin-bottom: 10px;">
-          <div style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <input type="password" id="newPassword1" name="newPassword1" placeholder="新パスワード" class="form-control" style="width: 120px; height: 32px !important; text-align: center;" />
-            <input type="password" id="newPassword2" name="newPassword2" placeholder="確認" class="form-control" style="width: 120px; height: 32px !important; text-align: center;" />
-            <button id="submitPasswordChange" type="button" class="btn btn-primary" style="height: 32px !important; padding: 0 15px !important; line-height: 1;">変更実行</button>
-          </div>
-        </form>
-    </div>
+        </div>
   </div>
 </div>
 
@@ -152,7 +144,7 @@
   </div>
 </div>
 
-<script src="list.js?v=20260436b" defer></script>
+<script src="list.js?v=20260436c" defer></script>
 
 <footer>
     <div style="font-weight: bold;">社有車予約システム</div>
@@ -164,7 +156,7 @@
         });
     });
 
-    // 🔴 簡易ログオン処理のスクリプト（list.jsの読み込み後に動くようにします）
+    // 🔴 簡易ログオン処理のスクリプト（お名前選択式）
     document.getElementById('loginBtn').onclick = function() {
         const selectedName = document.getElementById('nameSelector').value;
         if (!selectedName) {
@@ -172,13 +164,11 @@
             return;
         }
         
-        // list.js内のsetLoginInfoと同じ仕組みでローカルストレージに保存
-        const expiresAt = Date.now() + 1000 * 60 * 10; // 10分
+        const expiresAt = Date.now() + 1000 * 60 * 10; // 10分間有効
         localStorage.setItem("roomID", selectedName);
         localStorage.setItem("roomID_expiry", String(expiresAt));
         sessionStorage.setItem("roomID", selectedName);
         
-        // 画面更新
         location.reload(); 
     };
 </script>
