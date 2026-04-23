@@ -1,0 +1,181 @@
+/* ======================================================
+   G-Ave 社有車予約システム：【極・完全版】
+   ボタン・タイトル・表見出しの全上部固定仕様
+   ====================================================== */
+
+/* 1. 全体基本設定 */
+body { 
+    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+    font-size: 16px; margin: 0; padding: 0; color: #333; line-height: 1.4;
+    background-color: #f4f4f4; /* 背景を少し落ち着かせる */
+}
+.navbar-dark { background-color: #115728 !important; border: none; }
+header, footer { background-color: #115728 !important; color: #ffffff !important; }
+
+/* 🚀 2. 上部固定（Sticky）のコア設定 */
+/* 操作ボタンとタイトルを画面上部に張り付ける設定 */
+.sticky-top-container {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #ffffff; /* 下の文字が透けないように白背景 */
+    padding: 10px 5px 0 5px;
+    border-bottom: 2px solid #115728;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 3. 操作ボタン共通設定（青色） */
+.btn, .btn-default, .reservation-inner .btn, 
+#todayBtn, #prevWeekBtn, #nextWeekBtn, #calendarBtn, #myReservationBtn,
+#login-button, #logout-button, #change-password-button,
+#loginBtn, #logoutBtn {
+    background-color: #31708f !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-weight: bold !important;
+    padding: 8px 12px !important;
+    margin: 2px !important;
+    border-radius: 4px !important;
+    cursor: pointer;
+    text-decoration: none !important;
+    font-size: 13px !important;
+    /* display: inline-block !important; を削除（JS制御優先） */
+}
+
+/* 🟢 ボタン無効化（disabled）の視覚効果 */
+.btn:disabled, 
+button:disabled,
+.almost-hidden {
+    background-color: #d1d1d1 !important;
+    color: #888888 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    pointer-events: none !important;
+}
+
+/* 🟢 タイトルフォントサイズUP */
+.reservation-inner h4 {
+    text-align: center;
+    margin: 8px 0 !important;
+    font-size: 20px !important; 
+    font-weight: bold !important;
+    color: #333;
+}
+
+/* 4. 予約テーブル：基本構造 */
+.table-responsive {
+    background-color: #ffffff;
+    margin-top: 0px !important;
+}
+
+#reservationTable { 
+    width: 100% !important; 
+    border-collapse: collapse !important; 
+    border: 1px solid #ccc !important; 
+}
+
+/* 🟢 テーブルの見出しも固定（ボタンエリアの下に張り付く） */
+#reservationTable thead th { 
+    position: sticky;
+    top: 0; /* JSで生成されるstickyコンテナの直下に配置 */
+    background-color: #dff2e0 !important; 
+    color: #333 !important;
+    font-weight: bold !important; 
+    padding: 8px !important; 
+    border: 1px solid #ccc !important; 
+    font-size: 14px !important; 
+    text-align: center !important;
+    z-index: 900;
+}
+
+#reservationTable td {
+    border: 1px solid #ccc !important;
+    vertical-align: middle !important;
+    padding: 0px 2px !important;
+    height: 28px !important;
+    text-align: center;
+    white-space: nowrap !important;
+}
+
+/* 🟢 予約対象日と車種（旧エリア）の太字化 */
+.reservation-date-cell,
+.reservation-model {
+    font-weight: bold !important;
+    color: #000;
+}
+
+/* テンプレート行 */
+#reservationTable .template {
+    display: none !important;
+}
+
+/* 5. 操作列（ボタン）の幅設定 */
+#reservationTable th:last-child, 
+#reservationTable td:last-child {
+    width: 62px !important;
+    min-width: 62px !important;
+    max-width: 62px !important;
+    padding: 0 !important;
+}
+
+/* 6. 予約・取消ボタン共通 */
+#reservationTable .reserve-btn, 
+#reservationTable .cancel-btn {
+    width: 56px !important; 
+    height: 22px !important;
+    line-height: 22px !important;
+    color: #ffffff !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    border-radius: 3px !important;
+    border: none !important;
+    margin: 2px auto !important;
+    text-decoration: none !important;
+}
+
+/* 🟢 予約ボタンの濃緑（#1e8449 系統） */
+#reservationTable .reserve-btn { 
+    background: linear-gradient(to bottom, #1e8449, #196f3d) !important; 
+}
+
+/* 🔴 取消ボタンの色 */
+#reservationTable .cancel-btn { 
+    background: linear-gradient(to bottom, #e74c3c, #c0392b) !important; 
+}
+
+#reservationTable .reserve-btn:visited,
+#reservationTable .cancel-btn:visited {
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+/* 7. スマホ・PCレスポンシブ対応 */
+@media (max-width: 767px) {
+    .sticky-top-container { padding: 5px 2px 0 2px; }
+    #reservationTable th, #reservationTable td { font-size: 13px !important; }
+    .reservation-inner h4 { font-size: 18px !important; }
+    .btn { padding: 6px 8px !important; font-size: 12px !important; }
+}
+
+@media (min-width: 992px) {
+    .reservation-inner { max-width: 1000px; margin: 0 auto; }
+}
+
+/* 8. 利用規約・操作要領ページ等 */
+.terms-container, .manual-container {
+    padding: 20px; background-color: #f9f9f9; border-radius: 8px; border: 1px solid #ddd;
+    margin: 20px auto; max-width: 900px; color: #333; line-height: 1.6;
+}
+.terms-title, .manual-title { color: #115728; font-weight: bold; text-align: center; border-bottom: 2px solid #115728; padding-bottom: 10px; }
+.manual-content h4 { font-size: 18px; color: #ffffff; background-color: #31708f; padding: 6px 15px; border-radius: 4px; }
+
+/* 9. フッター設定 */
+footer {
+    background-color: #115728 !important; color: #ffffff !important;
+    padding: 15px 20px !important; text-align: center; font-size: 14px; margin-top: 30px !important;
+}
+
+/* 🚀 カレンダー（DatePicker）を最前面に表示する */
+#ui-datepicker-div {
+    z-index: 2000 !important; /* テーブルの固定ヘッダー(900〜1000)より大きな値を指定 */
+}
