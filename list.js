@@ -961,7 +961,7 @@ if (submitLoginBtn) {
 
       // AzureからのResponse（status: "OK"など）を判定
       if (result.status === "OK" || result.status === "success") {
-        showAlert(result.message || "パスワードを正常に変更しました。");
+        showAlert(result.message || "パスワードを正常に変更しました。 ");
         // フォームを閉じてクリア
         passwordChangeForm.style.display = "none";
         passwordChangeForm.style.visibility = "hidden";
