@@ -20,12 +20,22 @@
         .nav-divider { color: #ccc; }
 
         /* 📱 スマホズーム防止 */
-        input[type="text"], input[type="password"], .form-control { font-size: 16px !important; }
+        input[type="text"], input[type="password"], select, .form-control { font-size: 16px !important; }
 
         /* 🚀 余白の極限カット */
         .login-reservation-wrapper { margin: 0 !important; }
         .login-form-container { padding: 5px 10px 0px 10px !important; text-align: center; }
         .reservation-inner { padding: 0 !important; }
+
+        /* 名前選択リストボックスのスタイル */
+        #nameSelector {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: white;
+            color: #333;
+            width: 150px;
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
     <script src="//code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
@@ -48,11 +58,25 @@
 <div class="login-reservation-wrapper">
   <div class="login-form-container">
     <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 5px;">
+      
       <div id="initialLoginArea" style="display: inline-flex; align-items: center; gap: 10px;">
+        <select id="nameSelector" class="form-control">
+            <option value="">名前を選択...</option>
+            <option value="岩本">岩本</option>
+            <option value="長澤">長澤</option>
+            <option value="石橋">石橋</option>
+            <option value="齋藤">齋藤</option>
+            <option value="坂本">坂本</option>
+            <option value="佐藤">佐藤</option>
+            <option value="久保木">久保木</option>
+            <option value="谷口">谷口</option>
+        </select>
         <button id="loginBtn" class="btn btn-success">ログオン</button>
       </div>
+
       <button id="logoutBtn" class="btn btn-warning" style="display: none;">ログオフ</button>
       <span id="roomDisplay" style="font-size: 15px; font-weight: bold; color: #333; white-space: nowrap;">未ログオン状態です</span>
+      
       <button id="passwordChangeBtn" class="btn btn-secondary" style="display: none; font-size: 11px !important; padding: 2px 8px !important; height: auto !important;">パスワード変更</button>
     </div>
 
@@ -128,7 +152,7 @@
   </div>
 </div>
 
-<script src="list.js?v=20260436a" defer></script>
+<script src="list.js?v=20260436b" defer></script>
 
 <footer>
     <div style="font-weight: bold;">社有車予約システム</div>
@@ -139,6 +163,24 @@
             if(document.activeElement) document.activeElement.blur();
         });
     });
+
+    // 🔴 簡易ログオン処理のスクリプト（list.jsの読み込み後に動くようにします）
+    document.getElementById('loginBtn').onclick = function() {
+        const selectedName = document.getElementById('nameSelector').value;
+        if (!selectedName) {
+            alert("名前を選択してください。");
+            return;
+        }
+        
+        // list.js内のsetLoginInfoと同じ仕組みでローカルストレージに保存
+        const expiresAt = Date.now() + 1000 * 60 * 10; // 10分
+        localStorage.setItem("roomID", selectedName);
+        localStorage.setItem("roomID_expiry", String(expiresAt));
+        sessionStorage.setItem("roomID", selectedName);
+        
+        // 画面更新
+        location.reload(); 
+    };
 </script>
 
 </body>
