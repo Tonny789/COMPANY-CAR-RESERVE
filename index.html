@@ -27,14 +27,14 @@
         .login-form-container { padding: 5px 10px 0px 10px !important; text-align: center; }
         .reservation-inner { padding: 0 !important; }
 
-        /* 名前選択リストボックスのスタイル */
+        /* 🔴 修正：幅を半分(75px)に */
         #nameSelector {
             padding: 5px;
             border-radius: 4px;
             border: 1px solid #ccc;
             background-color: white;
             color: #333;
-            width: 150px;
+            width: 75px; 
         }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
@@ -60,8 +60,8 @@
     <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 5px;">
       
       <div id="initialLoginArea" style="display: inline-flex; align-items: center; gap: 10px;">
-        <select id="nameSelector" class="form-control">
-            <option value="">名前を選択...</option>
+        <select id="nameSelector" class="form-control" onchange="autoLogon(this)">
+            <option value="">...</option>
             <option value="岩本">岩本</option>
             <option value="長澤">長澤</option>
             <option value="石橋">石橋</option>
@@ -71,13 +71,12 @@
             <option value="久保木">久保木</option>
             <option value="谷口">谷口</option>
         </select>
-        <button id="loginBtn" class="btn btn-success">ログオン</button>
       </div>
 
       <button id="logoutBtn" class="btn btn-warning" style="display: none;">ログオフ</button>
       <span id="roomDisplay" style="font-size: 15px; font-weight: bold; color: #333; white-space: nowrap;">未ログオン状態です</span>
       
-      </div>
+    </div>
 
     <form id="loginForm" method="post" style="display: none; visibility: hidden; margin-bottom: 5px;">
         <div style="display: flex; justify-content: center; align-items: center; gap: 5px;">
@@ -86,9 +85,6 @@
           <button id="submitLogin" class="btn btn-primary">ログオン</button>
         </div>
     </form>
-
-    <div style="display: flex; justify-content: center; width: 100%;">
-        </div>
   </div>
 </div>
 
@@ -109,8 +105,7 @@
         </div>
         
         <h4>予約一覧 <span id="startDateDisplay">...</span> 〜 <span id="endDateDisplay">...</span></h4>
-
-        </div>
+    </div>
     
     <div class="table-responsive">
         <table id="reservationTable" class="table table-bordered table-striped" style="width: 100%;">
@@ -124,7 +119,6 @@
               <th>操作</th>
             </tr>
           </thead>
-          
           <tbody id="reservationTableBody">
             <tr class="template" style="display: none;">
               <td class="reservation-date-cell"></td>
@@ -144,7 +138,7 @@
   </div>
 </div>
 
-<script src="list.js?v=20260436c" defer></script>
+<script src="list.js?v=20260436e" defer></script>
 
 <footer>
     <div style="font-weight: bold;">社有車予約システム</div>
@@ -156,21 +150,18 @@
         });
     });
 
-    // 🔴 簡易ログオン処理のスクリプト（お名前選択式）
-    document.getElementById('loginBtn').onclick = function() {
-        const selectedName = document.getElementById('nameSelector').value;
-        if (!selectedName) {
-            alert("名前を選択してください。");
-            return;
-        }
+    // 🔴 選択されたら即座にログオンを実行する新関数
+    function autoLogon(selectElem) {
+        const selectedName = selectElem.value;
+        if (!selectedName) return;
         
-        const expiresAt = Date.now() + 1000 * 60 * 10; // 10分間有効
+        const expiresAt = Date.now() + 1000 * 60 * 10; 
         localStorage.setItem("roomID", selectedName);
         localStorage.setItem("roomID_expiry", String(expiresAt));
         sessionStorage.setItem("roomID", selectedName);
         
         location.reload(); 
-    };
+    }
 </script>
 
 </body>
