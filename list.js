@@ -388,38 +388,16 @@ async function fetchLoginRecord(roomNo) {
 // =========================
 // Automate 呼び出し（HTTP トリガー想定）
 // =========================
-//const FLOW_URL_PASSWORD_CHANGE =
-//  "https://de0947316b24e2709081db95d79805.bc.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2953b17842d944adacefcab3cc35dc99/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=79j9YqTw53Z-X_L0h_e49F-EdlxLs_GWB78eFA800Zo";
-
-//const FLOW_URL_PASSWORD_CHANGE =
-//  "https://prod-43.japaneast.logic.azure.com:443/workflows/8cc2937e8e9040048e7fd8c6b92577d3/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=lmgkxxeyHZ3a0SA-vvsTa3RMcCzWJAN3FLilRH25ykM";
-
-const FLOW_URL_PASSWORD_CHANGE =
-  "https://prod-47.japaneast.logic.azure.com:443/workflows/83eb21c03115431589a4bdc116d77a5d/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=SFUuwsFCcWsMv50ljnmmpk3dFivz7-Gow-iVPF7hjoo";
-
-
 const FLOW_URL_RESERVE =
    "https://prod-38.japaneast.logic.azure.com:443/workflows/662a5f4c38ae4fb388c36accf9678b26/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=jD3MDPKD1CPj7LBjT0zbEnSIzdh4LHelQvpx8TdQ-ZE";
 
-//const FLOW_URL_RESERVE =
-//   "https://prod-39.japaneast.logic.azure.com:443/workflows/fd9860598b9b4a34954915cf90c75b90/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=-z076RLAbFSSjvz-MKPcp-a4ndxLETKPG_ulfAW56jg";
-  
 
 //const FLOW_URL_CANCEL =
 //  "https://de0947316b24e2709081db95d79805.bc.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/6c2dd7923e3345edbff43dae8d18bf1c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=0uSHivWwopheC91bkA84QYumBfy5CfRsTYZvTrSpi30";
 
 
 const FLOW_URL_CANCEL =
-  "https://prod-01.japaneast.logic.azure.com:443/workflows/1f424639f04d470faab1f3e0e5ea02c6/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=sVhPuqBn_du52pdwFHzSMWzNic3LkIvjJM9Oog6QCGI";
-
-
-
-//const FLOW_URL_MYRESERVE =
-//  "https://de0947316b24e2709081db95d79805.bc.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/74c0c279f21d4cad8f404d6c626a847a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Nz4_Y3YgCYVfsMU5ggvEgAYOvCHfW-VbQh_4-StL63c";
-
-const FLOW_URL_MYRESERVE =
-  "https://prod-06.japaneast.logic.azure.com:443/workflows/2b248f20318f402399668c8bae958e92/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=ncPrT2d8KU2OAicVOz2c-bbL21un02fPtNm89XmJ68E";
-
+  "https://prod-29.japaneast.logic.azure.com:443/workflows/9aea3d5e54d6429c9afde6871bb77b68/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=48HJw9e2YUzDQRYqNDKs7Qbdrkq5voI14lHiBSRFrgM";
 
 // =========================
 // パスワード変更フロー呼び出し（調査ログ付き・唯一の正解）
