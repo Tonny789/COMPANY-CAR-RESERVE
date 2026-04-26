@@ -144,13 +144,14 @@
     <div style="font-weight: bold;">社有車予約システム</div>
 </footer>
 <script>
+    // 全てのボタンでクリック時にフォーカスを外す（既存機能）
     document.querySelectorAll('button').forEach(btn => {
         btn.addEventListener('click', () => {
             if(document.activeElement) document.activeElement.blur();
         });
     });
 
-    // 🔴 選択されたら即座にログオンを実行する新関数
+    // 🔴 選択されたら即座にログオンを実行する関数（既存機能）
     function autoLogon(selectElem) {
         const selectedName = selectElem.value;
         if (!selectedName) return;
@@ -162,6 +163,28 @@
         
         location.reload(); 
     }
+
+    // 🔴 門番機能：未ログオン状態での「予約・取消」を完全にブロックする
+    // list.js側の処理が動く前に割り込んでチェックします
+    document.addEventListener("click", function(event) {
+        const reserveBtn = event.target.closest(".reserve-btn");
+        const cancelBtn = event.target.closest(".cancel-btn");
+
+        // 予約または取消ボタンが押された時だけチェック
+        if (reserveBtn || cancelBtn) {
+            const loginId = localStorage.getItem("roomID"); // ログオン情報を確認
+            
+            if (!loginId) {
+                // 動作を完全に停止させる
+                event.preventDefault(); 
+                event.stopImmediatePropagation(); 
+                
+                // ユーザーに警告を表示（alert または showAlert）
+                alert("予約や取消を行うには、まずお名前を選択してログオンしてください。");
+                return false;
+            }
+        }
+    }, true); // 「true」を指定することで、他のイベントより最優先で実行させます
 </script>
 
 </body>
