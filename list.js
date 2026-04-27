@@ -324,7 +324,7 @@ async function fetchReservations(startKey, endKey, roomFilter) {
       body: JSON.stringify({ 
         filter: filter,
         // 🔴 修正：フローへ送る並び替え指示を「車種(cr15f_model)」に変更
-        orderby: "cr15f_yoyaku_taishobi asc, cr15f_model asc, cr15f_time asc"
+        orderby: "cr15f_yoyaku_taishobi asc, cr15f_model asc, cr15f_sort asc, cr15f_time asc"
       })
     });
 
