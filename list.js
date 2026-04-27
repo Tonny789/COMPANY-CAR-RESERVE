@@ -1104,14 +1104,21 @@ document.addEventListener("DOMContentLoaded", async function () {
 // ==========================================
 // 【最終調査ログ】画面全体を見張り、クリックを確実に捕まえる
 // ==========================================
-// ✅ ファイルの一番最後をこのように書き換えてください
+// ✅ PCでのスクロール戻り防止（preventDefault）を追加した修正版
 document.addEventListener("click", async function(event) {
   const reserveBtn = event.target.closest(".reserve-btn");
   const cancelBtn = event.target.closest(".cancel-btn");
 
   if (reserveBtn || cancelBtn) {
+    // 🚀 【重要】PCブラウザがページトップに戻ろうとする動きを強制停止
+    event.preventDefault(); 
+
     console.log("LOG: ボタンの物理クリックを検知しました。");
     const row = event.target.closest("tr");
+    
+    // 行が存在しない場合のガード
+    if (!row) return;
+
     const recordId = row.getAttribute("data-recordid");
 
     // 第2引数に event.target (ボタンそのもの) を渡すようにします
