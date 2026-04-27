@@ -1102,27 +1102,35 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 // ==========================================
-// 【最終調査ログ】画面全体を見張り、クリックを確実に捕まえる
+// 【最終解決版】スクロール位置を物理的に固定する
 // ==========================================
-// ✅ PCでのスクロール戻り防止（preventDefault）を追加した修正版
 document.addEventListener("click", async function(event) {
   const reserveBtn = event.target.closest(".reserve-btn");
   const cancelBtn = event.target.closest(".cancel-btn");
 
   if (reserveBtn || cancelBtn) {
-    // 🚀 【重要】PCブラウザがページトップに戻ろうとする動きを強制停止
+    // 1. 標準動作を停止
     event.preventDefault(); 
-
-    console.log("LOG: ボタンの物理クリックを検知しました。");
-    const row = event.target.closest("tr");
     
-    // 行が存在しない場合のガード
+    // 🚀 2. 現在の縦スクロール位置を「ピクセル単位」で記憶
+    const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+
+    console.log("LOG: 位置を記憶しました:", scrollPos);
+
+    const row = event.target.closest("tr");
     if (!row) return;
 
     const recordId = row.getAttribute("data-recordid");
 
-    // 第2引数に event.target (ボタンそのもの) を渡すようにします
+    // 3. 処理を実行（await で完了を待つ）
     if (reserveBtn) await handleReserveClick(recordId, reserveBtn);
     if (cancelBtn) await handleCancelClick(recordId, cancelBtn);
+
+    // 🚀 4. 描画が終わった直後に、記憶していた位置へ強制的に戻す
+    // setTimeoutを使うことで、ブラウザの自動スクロールより後に実行させます
+    setTimeout(() => {
+        window.scrollTo(0, scrollPos);
+        console.log("LOG: 元の位置に強制復帰しました");
+    }, 10);
   }
 });
