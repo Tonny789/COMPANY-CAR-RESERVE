@@ -151,7 +151,7 @@
         });
     });
 
-    // 🔴 選択されたら即座にログオンを実行する関数（既存機能）
+    // 🔴 名前が選択されたら即座にログオンを実行する関数
     function autoLogon(selectElem) {
         const selectedName = selectElem.value;
         if (!selectedName) return;
@@ -164,27 +164,24 @@
         location.reload(); 
     }
 
-    // 🔴 門番機能：未ログオン状態での「予約・取消」を完全にブロックする
-    // list.js側の処理が動く前に割り込んでチェックします
+    // 🔴 門番機能：警告を showAlert で表示するように修正
     document.addEventListener("click", function(event) {
         const reserveBtn = event.target.closest(".reserve-btn");
         const cancelBtn = event.target.closest(".cancel-btn");
 
-        // 予約または取消ボタンが押された時だけチェック
         if (reserveBtn || cancelBtn) {
-            const loginId = localStorage.getItem("roomID"); // ログオン情報を確認
+            const loginId = localStorage.getItem("roomID");
             
             if (!loginId) {
-                // 動作を完全に停止させる
                 event.preventDefault(); 
                 event.stopImmediatePropagation(); 
                 
-                // ユーザーに警告を表示（alert または showAlert）
-                alert("予約や取消を行うには、まずお名前を選択してログオンしてください。");
+                // 🔴 修正箇所：ブラウザ標準の alert ではなく、自作の showAlert を使用
+                showAlert("予約や取消を行うには、まずお名前を選択してログオンしてください。");
                 return false;
             }
         }
-    }, true); // 「true」を指定することで、他のイベントより最優先で実行させます
+    }, true); 
 </script>
 
 </body>
