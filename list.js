@@ -191,7 +191,8 @@ function getLoginInfo() {
 }
 
 function setLoginInfo(roomId) {
-  const expiresAt = Date.now() + 1000 * 60 * 10; // 10分
+  //const expiresAt = Date.now() + 1000 * 60 * 10; // 10分
+  const expiresAt = Date.now() + (1000 * 60 * 60 * 24 * 30);
   localStorage.setItem("roomID", roomId);
   localStorage.setItem("roomID_expiry", String(expiresAt));
 }
