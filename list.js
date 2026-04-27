@@ -646,17 +646,15 @@ function getRowDetail(row) {
 }
 
 // ==========================================
-// 予約ボタンクリック処理（ログオン警告・処理中は維持、成功時のみ更新）
+// 予約ボタンクリック処理（位置固定リフレッシュ版）
 // ==========================================
 async function handleReserveClick(recordId, btn) {
   const loginId = getLoginInfo();
-  // 🔴 警告メッセージ：旧来の showAlert をそのまま使用
   if (!loginId) { 
-      showAlert("予約にはログオンが必要です。"); 
+      showAlert("予約や取消を行うには、まずお名前を選択してログオンしてください。"); 
       return; 
   }
 
-  // 🔴 処理中メッセージ：旧来の showAlert をそのまま使用
   showAlert("処理中です...", null, "loading");
 
   try {
@@ -664,13 +662,13 @@ async function handleReserveClick(recordId, btn) {
     const flowResult = await callReserveFlow(recordId, loginId);
     
     if (flowResult && (flowResult.status === "success" || flowResult.status === "OK" || flowResult.result === "OK")) {
-      // 🟢 成功時：アラートを閉じて即座にリフレッシュ（ここだけメッセージをスキップ）
       closeAlert(); 
-      console.log("LOG: 予約成功。即座にリフレッシュします。");
+      console.log("LOG: 予約成功。画面をリロードせず、その場で描画を更新します。");
+      
+      // 🔴 ポイント：location.reload() を使わず、直接描画関数を呼ぶことで位置を固定
       loadWeekView(startDateRef.date, "WEEK"); 
     } else {
       closeAlert();
-      // 🔴 失敗メッセージ：旧来の showAlert を使用
       showAlert(flowResult.message || "予約に失敗しました。");
     }
   } catch (err) {
@@ -681,17 +679,15 @@ async function handleReserveClick(recordId, btn) {
 }
 
 // ==========================================
-// 取消ボタンクリック処理（ログオン警告・処理中は維持、成功時のみ更新）
+// 取消ボタンクリック処理（位置固定リフレッシュ版）
 // ==========================================
 async function handleCancelClick(recordId, btn) {
   const loginId = getLoginInfo();
-  // 🔴 警告メッセージ：旧来の showAlert をそのまま使用
   if (!loginId) { 
       showAlert("取消にはログオンが必要です。"); 
       return; 
   }
 
-  // 🔴 処理中メッセージ：旧来の showAlert をそのまま使用
   showAlert("処理中です...", null, "loading");
 
   try {
@@ -699,10 +695,10 @@ async function handleCancelClick(recordId, btn) {
     const flowResult = await callCancelFlow(recordId, loginId);
     
     if (flowResult && (flowResult.status === "success" || flowResult.status === "OK" || flowResult.status === "true")) {
-      // 🟢 成功時：アラートを閉じて即座にリフレッシュ（ここだけメッセージをスキップ）
       closeAlert();
-      console.log("LOG: 取消成功。即座にリフレッシュします。");
+      console.log("LOG: 取消成功。画面をリロードせず、その場で描画を更新します。");
       
+      // 🔴 ポイント：現在の表示モードに合わせて再描画（位置はそのまま）
       if (document.getElementById("prevWeekBtn").style.visibility === "hidden") {
           loadMyReservationView(); 
       } else {
@@ -710,7 +706,6 @@ async function handleCancelClick(recordId, btn) {
       }
     } else {
       closeAlert();
-      // 🔴 失敗メッセージ：旧来の showAlert を使用
       showAlert(flowResult.message || "取消に失敗しました。");
     }
   } catch (err) {
