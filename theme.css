@@ -66,6 +66,8 @@ button:disabled,
 .table-responsive {
     background-color: #ffffff;
     margin-top: 0px !important;
+    /* 🔴 追加：PCでの高さ再計算による跳ね上がりを防止 */
+    overflow: visible !important; 
 }
 
 #reservationTable { 
@@ -178,4 +180,18 @@ footer {
 /* 🚀 カレンダー（DatePicker）を最前面に表示する */
 #ui-datepicker-div {
     z-index: 2000 !important; /* テーブルの固定ヘッダー(900〜1000)より大きな値を指定 */
+}
+
+/* 🔴 追加：PCで再描画時のガタつきを物理的に抑え込む */
+@media (min-width: 992px) {
+    #reservationTable {
+        /* 表自体のレイアウトを固定し、再描画時のガタガタした動きを封じます */
+        table-layout: fixed; 
+        contain: paint;
+    }
+    
+    /* ボタンエリアをより滑らかに固定 */
+    .sticky-top-container {
+        will-change: transform;
+    }
 }
