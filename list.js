@@ -642,12 +642,11 @@ function getRowDetail(row) {
 }
 
 // ==========================================
-// 予約ボタンクリック処理（決定版）
+// 予約ボタンクリック処理（爆速リフレッシュ決定版）
 // ==========================================
-
-
 async function handleReserveClick(recordId, btn) {
   const loginId = getLoginInfo();
+  // 🔴 門番：ログオン確認は維持
   if (!loginId) { showAlert("予約にはログオンが必要です。"); return; }
 
   showAlert("処理中です...", null, "loading");
@@ -655,27 +654,16 @@ async function handleReserveClick(recordId, btn) {
   try {
     console.log("LOG: 予約フローを呼び出します ID:", recordId);
     const flowResult = await callReserveFlow(recordId, loginId);
-    console.log("flowResult:", flowResult);
-    closeAlert();
+    
     if (flowResult && (flowResult.status === "success" || flowResult.status === "OK" || flowResult.result === "OK")) {
-      const row = btn.closest("tr"); // btn から行を探す。これで info が正しく作られます
-      const info = getRowDetail(row);
- 
-      const confirmMsg =
-        `予約処理が正常に完了しました。\n\n【予約内容】\n${info.date}\n${info.area}\n${info.time}`;
-
-      // ★ OK後は「My予約モードで再描画」だけを確実に呼ぶ
-      // ✅ showAlert(confirmMsg, function () { ... }) の形に統一
-      // ✅ 予約成功時（670行目付近）の showAlert を以下に書き換え
-      showAlert(confirmMsg, function() {
-          console.log("LOG: 予約成功による画面更新を実行します。");
-          loadMyReservationView(); 
-      });
-
-     } else {
+      // 🔴 成功メッセージをスキップして即座に画面を更新
+      closeAlert(); 
+      console.log("LOG: 予約成功。現在の表示をリフレッシュします。");
+      loadWeekView(startDateRef.date, "WEEK"); 
+    } else {
+      closeAlert();
       showAlert(flowResult.message || "予約に失敗しました。");
     }
-
   } catch (err) {
     console.error("Critical Reserve Error:", err);
     closeAlert();
@@ -683,12 +671,12 @@ async function handleReserveClick(recordId, btn) {
   }
 }
 
-
 // ==========================================
-// 取消ボタンクリック処理（決定版）
+// 取消ボタンクリック処理（爆速リフレッシュ決定版）
 // ==========================================
 async function handleCancelClick(recordId, btn) {
   const loginId = getLoginInfo();
+  // 🔴 門番：ログオン確認は維持
   if (!loginId) { showAlert("取消にはログオンが必要です。"); return; }
 
   showAlert("処理中です...", null, "loading");
@@ -696,25 +684,22 @@ async function handleCancelClick(recordId, btn) {
   try {
     console.log("LOG: 取消フローを呼び出します ID:", recordId);
     const flowResult = await callCancelFlow(recordId, loginId);
-    closeAlert();
-
-      if (flowResult && (flowResult.status === "success" || flowResult.status === "OK" || flowResult.status === "true")) {
-      console.log("LOG: 取消フロー成功。メッセージを表示します。");
-
-      const row = btn.closest("tr");
-      const info = getRowDetail(row);
-
-      const confirmMsg = `取消処理が正常に完了しました。\n\n【取消内容】\n${info.date}\n${info.area}\n${info.time}`;
-      // ✅ showAlert(confirmMsg, function () { ... }) の形に統一
-      showAlert(confirmMsg, function() {
-          console.log("LOG: 取消後の画面更新を開始します。");
+    
+    if (flowResult && (flowResult.status === "success" || flowResult.status === "OK" || flowResult.status === "true")) {
+      // 🔴 成功メッセージをスキップして即座に画面を更新
+      closeAlert();
+      console.log("LOG: 取消成功。現在の表示をリフレッシュします。");
+      
+      // My予約表示中か通常表示中かでリフレッシュ先を分ける
+      if (document.getElementById("prevWeekBtn").style.visibility === "hidden") {
           loadMyReservationView(); 
-      });
-   } else {
-
+      } else {
+          loadWeekView(startDateRef.date, "WEEK"); 
+      }
+    } else {
+      closeAlert();
       showAlert(flowResult.message || "取消に失敗しました。");
     }
-
   } catch (err) {
     console.error("Critical Cancel Error:", err);
     closeAlert();
