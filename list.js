@@ -7,6 +7,9 @@ if (window.__LIST_JS_LOADED__) {
 // 🔴 最新の「社有車一覧取得用」URLへ差し替え完了
 //const LOGIC_APPS_RESERVATION_URL = "https://prod-19.eastasia.logic.azure.com:443/workflows/d5f1c6f77ab64df687dd04be7dbbddc4/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=7kzTEsa2rrimqWeFIYoRLGvzR-NSCElFzlubc3kAUgg";
 const LOGIC_APPS_RESERVATION_URL = "https://prod-19.eastasia.logic.azure.com:443/workflows/d5f1c6f77ab64df687dd04be7dbbddc4/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=7kzTEsa2rrimqWeFIYoRLGvzR-NSCElFzlubc3kAUgg";
+
+// 🔴 追加：日付管理用の変数をグローバル（どこからでも見える場所）に定義
+let startDateRef = { date: new Date() };
 // =========================
 // ホームページ起動チェック（allowed:false → 起動停止）
 // =========================
@@ -1067,10 +1070,16 @@ document.addEventListener("DOMContentLoaded", async function () {
   updateLoginUI();
 
   // 日付の初期設定（今日を基準にする）
-  const startDateRef = { date: null };
+// 日付の初期設定（上のほうで定義済みなので、中身を入れるだけにする）
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   startDateRef.date = today;
+
+
+  //const startDateRef = { date: null };
+  //const today = new Date();
+  //today.setHours(0, 0, 0, 0);
+  //startDateRef.date = today;
 
   // ボタンやカレンダーのイベント設定
   setupLoginHandlers();
