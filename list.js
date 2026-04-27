@@ -517,26 +517,37 @@ function renderReservationList(records, mode, loginId) {
   const tbody = document.getElementById("reservationTableBody");
   const noDataMessage = document.getElementById("noDataMessage");
 
+  // 🚀 【PC対策】描き換え中の「高さゼロ」を防ぐため、現在の高さを一時的に固定
+  const tableContainer = document.querySelector(".table-responsive");
+  if (tableContainer) {
+      // 現在のピクセル高さを取得してmin-heightに設定
+      const currentHeight = tableContainer.offsetHeight;
+      tableContainer.style.minHeight = currentHeight + "px";
+  }
+
   // 1. お掃除：テンプレート以外の「目に見えている古いデータ行」だけを確実に削除
   const oldRows = tbody.querySelectorAll("tr:not(.template)");
   oldRows.forEach(row => row.remove());
 
   // 2. テンプレートの確保（ここが最重要！）
-  // まず tbody の中を探し、なければ表全体から探し直して「template」変数に格納します
   let template = tbody.querySelector(".template");
   if (!template) {
     template = document.querySelector("#reservationTable .template");
   }
 
-  // 3. 最終チェック（真っ白画面防止のガードレール）
+  // 3. 最終チェック
   if (!template) {
     console.error("FATAL ERROR: テンプレート行がHTML内に存在しません。");
+    // エラー時も高さを戻しておく
+    if (tableContainer) tableContainer.style.minHeight = "auto";
     return;
   }
 
   // 4. データがない場合の処理
   if (!records || records.length === 0) {
     if (noDataMessage) noDataMessage.style.display = "block";
+    // データなしの場合も高さを戻す
+    if (tableContainer) tableContainer.style.minHeight = "auto";
     return;
   } else {
     if (noDataMessage) noDataMessage.style.display = "none";
@@ -547,13 +558,11 @@ function renderReservationList(records, mode, loginId) {
 
   // 5. 届いたデータを1件ずつループで回す
   records.forEach((item) => {
-    // テンプレートをコピーして新しい行を作る
     const tr = template.cloneNode(true);
     tr.classList.remove("template", "d-none"); 
     tr.style.display = ""; 
 
     const dateKey = item.cr15f_yoyaku_taishobi || "";
-    // 🔴 修正：描画対象を「車種(cr15f_model)」に変更
     const currentArea = item.cr15f_model || "-";
 
     // --- 日付の表示判定 ---
@@ -561,17 +570,14 @@ function renderReservationList(records, mode, loginId) {
     if (dateKey === lastDate) {
         dateCell.textContent = ""; 
     } else {
-        // const y = dateKey.substring(0, 4); // 👈 ここを使わない
         const m = dateKey.substring(4, 6);
         const d = dateKey.substring(6, 8);
-        // dateCell.textContent = `${y}年${m}月${d}日`; // 👈 これを以下に書き換え
         dateCell.textContent = `${m}月${d}日`; 
         lastDate = dateKey;
         lastArea = ""; 
     }
 
-    // --- エリア（車種）の表示判定 ---
-    // 🔴 修正：クラス名を「reservation-model」に変更
+    // --- 車種の表示判定 ---
     const areaCell = tr.querySelector(".reservation-model");
     if (currentArea === lastArea) {
       areaCell.textContent = "";
@@ -583,20 +589,16 @@ function renderReservationList(records, mode, loginId) {
     // --- 各項目の流し込み ---
     tr.querySelector(".reservation-time").textContent = item.cr15f_time || "-";
     tr.querySelector(".reservation-status").textContent = item.cr15f_yoyakustatus || "-";
-    // 🔴 修正：表示対象を「予約者名(cr15f_name)」に変更。クラス名も「reservation-name」へ
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus === "予約済み" ? item.cr15f_name || "-" : "-";
 
-    // --- ボタンの制御（最新・安定版） ---
+    // --- ボタンの制御 ---
     const reserveBtn = tr.querySelector(".reserve-btn");
     const cancelBtn = tr.querySelector(".cancel-btn");
-    // 🔴 修正：ID列名を「社有車予約ID(cr15f_company_careid)」に変更
     const recordId = item.cr15f_company_careid;
     const status = item.cr15f_yoyakustatus;
 
-    // 行にIDを刻印（一番下の司令塔用）
     tr.setAttribute("data-recordid", recordId);
-
 
     if (status === "予約済み") {
           cancelBtn.style.display = "inline-block";
@@ -606,12 +608,16 @@ function renderReservationList(records, mode, loginId) {
           cancelBtn.style.display = "none";
       }
 
-
     // 最後に表に追加
     tbody.appendChild(tr);
   });
-}
 
+  // 🚀 【PC対策】描画が完全に終わった後に、固定していた高さを解除
+  // わずかな遅延を入れることで、ブラウザがスクロールを維持する時間を稼ぎます
+  setTimeout(() => {
+    if (tableContainer) tableContainer.style.minHeight = "auto";
+  }, 100);
+}
 
 // =========================
 // 共通：日付とエリアを遡って取得する関数
@@ -1131,6 +1137,6 @@ document.addEventListener("click", async function(event) {
     setTimeout(() => {
         window.scrollTo(0, scrollPos);
         console.log("LOG: 元の位置に強制復帰しました");
-    }, 10);
+    }, 50);
   }
 });

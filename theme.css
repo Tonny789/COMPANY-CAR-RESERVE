@@ -195,3 +195,14 @@ footer {
         will-change: transform;
     }
 }
+/* 🔴 徹底対策3：PCブラウザのスクロール自動調整機能を無効化 */
+html {
+    overflow-anchor: none !important;
+    scroll-behavior: auto !important;
+}
+
+/* 描画中のガタつきを視覚的に抑える */
+.table-responsive {
+    overflow: visible !important;
+    min-height: 400px; /* 念のため最低限の高さを確保 */
+}
