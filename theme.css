@@ -68,28 +68,30 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
     .btn { padding: 6px 8px !important; font-size: 12px !important; }
 }
 
-/* 🟢 B. スマホ縦画面（480px以下）：【ここが今回のメイン修正】 */
 @media (max-width: 480px) {
     #reservationTable {
-        table-layout: fixed !important; /* 幅指定を絶対厳守させる */
+        table-layout: fixed !important;
+        width: 100% !important;
     }
     
-    /* 比率を再配分：3列目（時間）を最小限の8%に削り、4列目（状態）を32%まで拡大 */
-    #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; } /* 日付 */
-    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 17% !important; } /* 車種 */
-    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 8% !important; }  /* 👈時間(極小) */
-    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 32% !important; } /* 👈状態(最大) */
-    #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 13% !important; } /* 名前 */
-    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 13% !important; } /* 操作 */
+    /* 🔴 比率の再定義：予約状態（4列目）を確実に 30% 確保する */
+    #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; }
+    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 17% !important; }
+    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 10% !important; } /* 時間 */
+    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 30% !important; } /* 👈状態(30%) */
+    #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 13% !important; }
+    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 13% !important; }
 
     .reservation-status {
+        display: block !important; /* インラインからブロックに変更して幅一杯に広げる */
+        width: 100% !important;
         min-width: 0 !important;
-        max-width: 100% !important;
-        overflow: visible !important; /* 省略(..)を禁止 */
+        overflow: visible !important; /* 🔴 これが重要：省略(...)を強制禁止 */
+        text-overflow: clip !important;
         white-space: nowrap !important;
     }
     #reservationTable th, #reservationTable td { 
-        font-size: 11px !important; /* スマホ縦は11px以下で詰め込む */
+        font-size: 12px !important; /* 11pxだと小さすぎるので12pxに上げます */
         padding: 4px 0px !important; 
     }
 }

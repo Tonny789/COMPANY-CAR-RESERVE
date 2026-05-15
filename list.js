@@ -613,17 +613,15 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-    // 🟢 最終解決：CSSに負けない優先度でフォントサイズを動的変更
-    const statusCell = tr.querySelector(".reservation-status");
+  // 🟢 修正：10文字程度なら11px〜12pxで十分入ります
     const statusText = item.cr15f_yoyakustatus || "-";
     statusCell.textContent = statusText;
 
-    // list.js のフォントサイズ変更部分がこのようになっていれば完璧です
-    if (statusText.length >= 8) {
-        statusCell.style.setProperty("font-size", "10px", "important");
-    } else if (statusText.length >= 6) {
+    if (statusText.length >= 7) {
+        // 7文字以上（リョービ静岡など）：11px
         statusCell.style.setProperty("font-size", "11px", "important");
     } else {
+        // 6文字以下：13px（標準）
         statusCell.style.setProperty("font-size", "13px", "important");
     }
 
