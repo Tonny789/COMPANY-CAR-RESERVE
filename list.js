@@ -619,14 +619,12 @@ function renderReservationList(records, mode, loginId) {
     statusCell.textContent = statusText;
 
     if (statusText.length >= 8) {
-        // 8文字以上（リョービ静岡など）：10px相当へ
         statusCell.style.setProperty("font-size", "10px", "important");
     } else if (statusText.length >= 6) {
-        // 6-7文字：11px相当へ
         statusCell.style.setProperty("font-size", "11px", "important");
     } else {
-        // 5文字以下：標準
-        statusCell.style.setProperty("font-size", "13px");
+        // 5文字以下は標準サイズ
+        statusCell.style.setProperty("font-size", "13px", "important");
     }
 
     // アンダーライン等のクリック設定
