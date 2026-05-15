@@ -635,13 +635,20 @@ function renderReservationList(records, mode, loginId) {
     statusCell.style.overflow = "hidden";
     statusCell.style.textOverflow = "ellipsis";
 
-    // 予約状態が「空き」以外なら、クリック（修正）を可能にする
+   // 予約状態が「空き」以外なら、クリック（修正）を可能にする
     if (statusText !== "空き") {
       statusCell.style.cursor = "pointer";
       statusCell.style.textDecoration = "underline";
       statusCell.style.color = "#0056b3";
       statusCell.classList.add("clickable-update");
       statusCell.setAttribute("data-reserved-by", item.cr15f_name || "");
+    } else {
+      // 🟢 追加：ステータスが「空き」の場合はスタイルを標準に戻す
+      statusCell.style.cursor = "default";
+      statusCell.style.textDecoration = "none";
+      statusCell.style.color = ""; // 標準の色に戻す
+      statusCell.classList.remove("clickable-update");
+      statusCell.removeAttribute("data-reserved-by");
     }
 
     // --- ボタンの制御 ---
