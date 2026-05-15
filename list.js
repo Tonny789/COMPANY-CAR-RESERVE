@@ -1197,7 +1197,7 @@ document.addEventListener("click", async function(event) {
     const time = row.querySelector(".reservation-time").textContent;
 
     // 🟢 prompt の代わりに showAlert を使用
-    showAlert(`${time} の予約内容を修正します。`, async (newContent) => {
+    showAlert(`${time} のコメント内容を修正します。`, async (newContent) => {
         // ここから fetch 処理
         showAlert("更新中...", null, "loading");
         try {
