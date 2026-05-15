@@ -74,11 +74,11 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
     
     /* 4列目（予約状態）を32%まで確保 */
     #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; }
-    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 17% !important; }
-    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 8% !important; } 
-    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 32% !important; } /* 👈ここ */
+    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 20% !important; }
+    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 9% !important; } 
+    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 26% !important; } /* 👈ここ */
     #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 13% !important; }
-    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 13% !important; }
+    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 15% !important; }
 
     .reservation-status {
         display: block !important; /* 🔴 inline-blockから変更して幅を使い切る */
