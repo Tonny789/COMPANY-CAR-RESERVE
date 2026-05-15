@@ -113,30 +113,48 @@ function showAlert(message, onOk, type) {
   const modal = document.getElementById("customAlert");
   const msgElem = document.getElementById("alertMessage");
   const okBtn = document.getElementById("alertOkButton");
+  const inputElem = document.getElementById("alertInput"); 
+  const cancelBtn = document.getElementById("alertCancelButton");
 
   msgElem.textContent = message;
   modal.style.display = "block";
 
+  // 一旦リセット
+  inputElem.style.display = "none";
+  cancelBtn.style.display = "none";
+  okBtn.style.display = "inline-block";
+
   if (type === "loading") {
     okBtn.style.display = "none";
-  } else {
-    okBtn.style.display = "inline-block";
-
-
-    // ✅ showAlert 関数内の okBtn.onclick の中身を以下に差し替え
-  okBtn.onclick = function() {
-        console.log("LOG: OKボタンが物理的にクリックされました。");
-        modal.style.display = "none"; // アラートを閉じる
-
-        // 渡された命令（onOk）がある場合、それを実行する
-        if (onOk && typeof onOk === 'function') {
-            console.log("LOG: 登録された命令を実行します。");
-            onOk(); 
-        } else {
-            console.warn("LOG: 命令(onOk)が設定されていないか、関数ではありません。");
-        }
+  } 
+  else if (type === "input") {
+    // 🟢 入力モード
+    inputElem.style.display = "block";
+    inputElem.value = ""; // 入力欄を空にする
+    cancelBtn.style.display = "inline-block";
+    
+    // キャンセルボタンの動作
+    cancelBtn.onclick = function() {
+        modal.style.display = "none";
     };
- 
+
+    // OKボタンの動作（入力値を渡す）
+    okBtn.onclick = function() {
+        const val = inputElem.value.trim();
+        if (!val) {
+            alert("内容を入力してください。");
+            return;
+        }
+        modal.style.display = "none";
+        if (onOk) onOk(val); // 入力された文字を引数で渡す
+    };
+  } 
+  else {
+    // 通常の警告モード
+    okBtn.onclick = function() {
+        modal.style.display = "none";
+        if (onOk) onOk(); 
+    };
   }
 }
 
@@ -1175,54 +1193,96 @@ document.addEventListener("click", async function(event) {
     return; // 処理終了
   }
 
-  // 2. 「予約済み」テキスト（修正）がクリックされた場合の処理
+  // 修正処理の部分（統合した addEventListener の中）
   if (updateTarget) {
     event.preventDefault();
-
-    const loginId = getLoginInfo(); // ログオン者
+    const loginId = getLoginInfo();
     const reservedBy = updateTarget.getAttribute("data-reserved-by");
 
-    // ３．修正制限：本人の場合のみ修正可能
     if (!loginId || loginId !== reservedBy.trim().toUpperCase()) {
         showAlert(`ご自身の予約（${reservedBy}様分）のみ内容を修正できます。`);
         return;
     }
 
     const row = event.target.closest("tr");
-    if (!row) return;
     const recordId = row.getAttribute("data-recordid");
     const time = row.querySelector(".reservation-time").textContent;
 
-    // １．修正内容入力プロンプトの表示
-    const newContent = prompt(`${time} の予約内容を修正します。\n新しい内容を入力してください：`, "");
-
-    if (newContent === null) return; // キャンセル時
-    if (newContent.trim() === "") { 
-        showAlert("内容は空欄にできません。"); 
-        return; 
-    }
-
-    showAlert("更新中...", null, "loading");
-    try {
-        const res = await fetch(FLOW_URL_UPDATE_CONTENT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ recordId: recordId, comment: newContent })
-        });
-        const result = await res.json();
-        closeAlert();
-
-        if (result.status === "success") {
-            showAlert("予約内容を修正しました。", () => {
-                loadWeekView(startDateRef.date, "WEEK"); // 再描画
+    // 🟢 prompt の代わりに showAlert を使用
+    showAlert(`${time} の予約内容を修正します。`, async (newContent) => {
+        // ここから fetch 処理
+        showAlert("更新中...", null, "loading");
+        try {
+            const res = await fetch(FLOW_URL_UPDATE_CONTENT, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ recordId: recordId, comment: newContent })
             });
-        } else {
-            showAlert("修正に失敗しました。");
+            const result = await res.json();
+            closeAlert();
+            if (result.status === "success") {
+                showAlert("予約内容を修正しました。", () => {
+                    loadWeekView(startDateRef.date, "WEEK");
+                });
+            } else {
+                showAlert("修正に失敗しました。");
+            }
+        } catch (e) {
+            closeAlert();
+            showAlert("通信エラーが発生しました。");
         }
-    } catch (e) {
-        closeAlert();
-        showAlert("通信エラーが発生しました。");
-    }
-    return; // 処理終了
+    }, "input"); // 第3引数に "input" を渡す
+    return;
   }
+
+  // 2. 「予約済み」テキスト（修正）がクリックされた場合の処理
+//  if (updateTarget) {
+//    event.preventDefault();
+//
+//    const loginId = getLoginInfo(); // ログオン者
+//    const reservedBy = updateTarget.getAttribute("data-reserved-by");
+//
+    // ３．修正制限：本人の場合のみ修正可能
+//    if (!loginId || loginId !== reservedBy.trim().toUpperCase()) {
+//        showAlert(`ご自身の予約（${reservedBy}様分）のみ内容を修正できます。`);
+//        return;
+//    }
+//
+//    const row = event.target.closest("tr");
+//    if (!row) return;
+//    const recordId = row.getAttribute("data-recordid");
+//    const time = row.querySelector(".reservation-time").textContent;
+//
+    // １．修正内容入力プロンプトの表示
+//    const newContent = prompt(`${time} の予約内容を修正します。\n新しい内容を入力してください：`, "");
+//
+//    if (newContent === null) return; // キャンセル時
+//    if (newContent.trim() === "") { 
+//        showAlert("内容は空欄にできません。"); 
+//        return; 
+//    }
+//
+//    showAlert("更新中...", null, "loading");
+//    try {
+//        const res = await fetch(FLOW_URL_UPDATE_CONTENT, {
+//            method: "POST",
+//            headers: { "Content-Type": "application/json" },
+//            body: JSON.stringify({ recordId: recordId, comment: newContent })
+//        });
+//        const result = await res.json();
+//        closeAlert();
+//
+//        if (result.status === "success") {
+//            showAlert("予約内容を修正しました。", () => {
+//                loadWeekView(startDateRef.date, "WEEK"); // 再描画
+//            });
+//        } else {
+//            showAlert("修正に失敗しました。");
+//        }
+//    } catch (e) {
+//        closeAlert();
+//        showAlert("通信エラーが発生しました。");
+//    }
+//    return; // 処理終了
+//  }
 });
