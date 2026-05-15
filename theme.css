@@ -73,9 +73,9 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
     
     /* 🔴 スマホ縦の最終黄金比：状態を24%に絞り、車種とボタンを広げる */
     #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; } /* 日付 */
-    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 23% !important; } /* 👈車種(22%) */
+    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 24% !important; } /* 👈車種(22%) */
     #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 9% !important; }  /* 時間 */
-    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 23% !important; } /* 👈状態(24%) */
+    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 22% !important; } /* 👈状態(24%) */
     #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 13% !important; } /* 名前 */
     #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 15% !important; } /* 👈操作(15%) */
 
