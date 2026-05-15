@@ -83,7 +83,7 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
         display: block !important;
         width: 100% !important;
         /* 🔴 修正：左端から「2px」だけ空けて、あとは全部文字のスペースにします */
-        padding: 0 0 0 2px !important; 
+        padding: 0 0 0 1px !important; 
         box-sizing: border-box;
         overflow: visible !important;
         white-space: nowrap !important;
