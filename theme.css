@@ -69,6 +69,8 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
     width: 100% !important; 
     border-collapse: collapse !important; 
     border: 1px solid #ccc !important; 
+    /* 🔴 修正：デフォルト(PC/スマホ横)はautoにして、タイトル幅と合わせる */
+    table-layout: auto; 
 }
 
 /* 🟢 テーブルの見出しも固定 */
@@ -96,10 +98,10 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
 
 /* 🟢 予約状態セルの個別設定 */
 .reservation-status {
-    min-width: 80px;
+    /* PCではタイトル幅に応じて広がるよう最小幅だけ指定 */
+    min-width: 100px;
     display: inline-block;
     vertical-align: middle;
-    /* JSでのアンダーライン付与を邪魔しないよう、ここではあえて指定なし */
     word-break: keep-all; 
 }
 
@@ -154,6 +156,7 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
     #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 15%; } /* 操作 */
 
     .reservation-status {
+        min-width: 0 !important; /* スマホ縦では制限を解除して縮小優先 */
         max-width: 100% !important;
         overflow: hidden;
         text-overflow: clip;
@@ -168,16 +171,16 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
 
 @media (max-width: 767px) {
     .sticky-top-container { padding: 5px 2px 0 2px; }
-    #reservationTable th, #reservationTable td { font-size: 13px; } /* !important削除済み */
+    #reservationTable th, #reservationTable td { font-size: 13px; }
     .reservation-inner h4 { font-size: 18px !important; }
     .btn { padding: 6px 8px !important; font-size: 12px !important; }
 }
 
-/* 🟢 PC用設定（予約状態の幅不足を解消） */
+/* 🟢 PC用設定 */
 @media (min-width: 992px) {
-    .reservation-inner { max-width: 1000px; margin: 0 auto; }
+    .reservation-inner { max-width: 1100px; margin: 0 auto; }
     #reservationTable {
-        table-layout: auto !important; /* PCでは中身に合わせて伸縮 */
+        table-layout: auto !important; /* PCでは中身に合わせて伸縮（見出し幅を守る） */
     }
 }
 
