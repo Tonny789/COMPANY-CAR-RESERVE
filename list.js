@@ -613,15 +613,15 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-  // 🟢 修正：10文字程度なら11px〜12pxで十分入ります
+    // 430行目付近
+    const statusCell = tr.querySelector(".reservation-status");
     const statusText = item.cr15f_yoyakustatus || "-";
     statusCell.textContent = statusText;
 
+    // 🔴 スマホ縦で省略されないための最終ロジック
     if (statusText.length >= 7) {
-        // 7文字以上（リョービ静岡など）：11px
         statusCell.style.setProperty("font-size", "11px", "important");
     } else {
-        // 6文字以下：13px（標準）
         statusCell.style.setProperty("font-size", "13px", "important");
     }
 
@@ -1275,4 +1275,13 @@ document.addEventListener("click", async function(event) {
 //    }
 //    return; // 処理終了
 //  }
+});
+// 🟢 ファイルの最後にこれを追記することで、画面を開いた時にデータが読み込まれます
+document.addEventListener("DOMContentLoaded", () => {
+    // ログイン状態を確認して一覧を表示
+    const loginId = localStorage.getItem("roomID");
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 初期表示を実行
+    fetchReservations(today);
 });
