@@ -403,6 +403,12 @@ const FLOW_URL_RESERVE =
 const FLOW_URL_CANCEL =
   "https://prod-29.japaneast.logic.azure.com:443/workflows/9aea3d5e54d6429c9afde6871bb77b68/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=48HJw9e2YUzDQRYqNDKs7Qbdrkq5voI14lHiBSRFrgM";
 
+
+// 🔴 ファイル上部：URLが並んでいる場所に追加
+const FLOW_URL_UPDATE_CONTENT = 
+   "https://prod-44.japaneast.logic.azure.com:443/workflows/b6837bfb574640be88bd0586d75fce5d/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=aB2NXJKPcsWD2_lC4qLwedWGnLtt1iS35DoHXkAcXT8";
+
+
 // =========================
 // パスワード変更フロー呼び出し（調査ログ付き・唯一の正解）
 // =========================
@@ -591,6 +597,21 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-status").textContent = item.cr15f_yoyakustatus || "-";
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus === "予約済み" ? item.cr15f_name || "-" : "-";
+
+    // --- 修正後 ---
+    const statusCell = tr.querySelector(".reservation-status");
+    const statusText = item.cr15f_yoyakustatus || "-";
+    statusCell.textContent = statusText;
+
+    // 「予約済み」の場合のみ、クリック可能にする設定を追加
+    if (statusText === "予約済み") {
+        statusCell.style.cursor = "pointer";
+        statusCell.style.textDecoration = "underline";
+        statusCell.style.color = "#0056b3"; // リンクのように青くする
+        statusCell.classList.add("clickable-update"); // 目印のクラス
+        statusCell.setAttribute("data-reserved-by", item.cr15f_name || ""); // 判定用に名前を保存
+    }
+
 
     // --- ボタンの制御 ---
     const reserveBtn = tr.querySelector(".reserve-btn");
@@ -1108,35 +1129,86 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 // ==========================================
-// 【最終解決版】スクロール位置を物理的に固定する
+// 【最終統合版】クリックイベント（予約・取消・内容修正）
 // ==========================================
 document.addEventListener("click", async function(event) {
+  // クリックされた要素の判定
   const reserveBtn = event.target.closest(".reserve-btn");
   const cancelBtn = event.target.closest(".cancel-btn");
+  const updateTarget = event.target.closest(".clickable-update");
 
+  // 1. 予約ボタン または 取消ボタン が押された場合の処理
   if (reserveBtn || cancelBtn) {
-    // 1. 標準動作を停止
     event.preventDefault(); 
     
-    // 🚀 2. 現在の縦スクロール位置を「ピクセル単位」で記憶
+    // 🚀 現在の縦スクロール位置を記憶
     const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
-
     console.log("LOG: 位置を記憶しました:", scrollPos);
 
     const row = event.target.closest("tr");
     if (!row) return;
-
     const recordId = row.getAttribute("data-recordid");
 
-    // 3. 処理を実行（await で完了を待つ）
+    // 各処理を実行（await で完了を待つ）
     if (reserveBtn) await handleReserveClick(recordId, reserveBtn);
     if (cancelBtn) await handleCancelClick(recordId, cancelBtn);
 
-    // 🚀 4. 描画が終わった直後に、記憶していた位置へ強制的に戻す
-    // setTimeoutを使うことで、ブラウザの自動スクロールより後に実行させます
+    // 🚀 描画が終わった後に元の位置へ復帰
     setTimeout(() => {
         window.scrollTo(0, scrollPos);
         console.log("LOG: 元の位置に強制復帰しました");
     }, 50);
+    return; // 処理終了
+  }
+
+  // 2. 「予約済み」テキスト（修正）がクリックされた場合の処理
+  if (updateTarget) {
+    event.preventDefault();
+
+    const loginId = getLoginInfo(); // ログオン者
+    const reservedBy = updateTarget.getAttribute("data-reserved-by");
+
+    // ３．修正制限：本人の場合のみ修正可能
+    if (!loginId || loginId !== reservedBy.trim().toUpperCase()) {
+        showAlert(`ご自身の予約（${reservedBy}様分）のみ内容を修正できます。`);
+        return;
+    }
+
+    const row = event.target.closest("tr");
+    if (!row) return;
+    const recordId = row.getAttribute("data-recordid");
+    const time = row.querySelector(".reservation-time").textContent;
+
+    // １．修正内容入力プロンプトの表示
+    const newContent = prompt(`${time} の予約内容を修正します。\n新しい内容を入力してください：`, "");
+
+    if (newContent === null) return; // キャンセル時
+    if (newContent.trim() === "") { 
+        showAlert("内容は空欄にできません。"); 
+        return; 
+    }
+
+    showAlert("更新中...", null, "loading");
+    try {
+        const res = await fetch(FLOW_URL_UPDATE_CONTENT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ recordId: recordId, comment: newContent })
+        });
+        const result = await res.json();
+        closeAlert();
+
+        if (result.status === "success") {
+            showAlert("予約内容を修正しました。", () => {
+                loadWeekView(startDateRef.date, "WEEK"); // 再描画
+            });
+        } else {
+            showAlert("修正に失敗しました。");
+        }
+    } catch (e) {
+        closeAlert();
+        showAlert("通信エラーが発生しました。");
+    }
+    return; // 処理終了
   }
 });
