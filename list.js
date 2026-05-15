@@ -613,32 +613,14 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-  // 🟢 最終統合：ステータス文字の表示と幅の強制確保
+  // 🟢 修正：余計なスペースを一切入れない
     const statusCell = tr.querySelector(".reservation-status");
     const statusText = item.cr15f_yoyakustatus || "-";
     
-    // 🔴 「空き」の場合：前後に全角スペースを入れてブラウザに幅を意識させる
     if (statusText === "空き") {
-        statusCell.textContent = "　空き　"; 
-        statusCell.style.setProperty("font-size", "13px", "important");
-        statusCell.style.textDecoration = "none";
-        statusCell.style.color = "inherit";
-        statusCell.classList.remove("clickable-update");
+        statusCell.textContent = "空き"; // 👈 スペースなし
     } else {
-        // 🔴 予約済みの場合：前後を半角スペースにして引き締める
-        statusCell.textContent = " " + statusText + " ";
-        
-        if (statusText.length >= 7) {
-            statusCell.style.setProperty("font-size", "11px", "important");
-        } else {
-            statusCell.style.setProperty("font-size", "13px", "important");
-        }
-        
-        statusCell.style.cursor = "pointer";
-        statusCell.style.textDecoration = "underline";
-        statusCell.style.color = "#0056b3";
-        statusCell.classList.add("clickable-update");
-        statusCell.setAttribute("data-reserved-by", item.cr15f_name || "");
+        statusCell.textContent = statusText; // 👈 スペースなし
     }
 
     // アンダーライン等のクリック設定

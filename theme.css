@@ -79,14 +79,16 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
     #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 13% !important; } /* 名前 */
     #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 15% !important; } /* 👈操作(15%) */
 
-    .reservation-status {
+.reservation-status {
         display: block !important;
         width: 100% !important;
-        padding: 0 1px !important; /* 余白を2pxに抑えてスリムに */
+        /* 🔴 修正：左端から「2px」だけ空けて、あとは全部文字のスペースにします */
+        padding: 0 0 0 2px !important; 
         box-sizing: border-box;
         overflow: visible !important;
         white-space: nowrap !important;
-        text-align: center;
+        /* 🔴 修正：親のセンター設定を無視して左寄せを強制 */
+        text-align: left !important; 
     }
 }
 
