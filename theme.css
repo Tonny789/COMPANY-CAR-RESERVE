@@ -96,13 +96,15 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
     white-space: nowrap; 
 }
 
-/* 🟢 予約状態セルの個別設定 */
+/* 🟢 スマホ全体・PC共通：予約状態の幅を死守する設定 */
 .reservation-status {
-    /* PCではタイトル幅に応じて広がるよう最小幅だけ指定 */
-    min-width: 100px;
     display: inline-block;
     vertical-align: middle;
-    word-break: keep-all; 
+    /* PC/スマホ横で潰れないよう、最小幅をしっかり確保 */
+    min-width: 110px !important; 
+    text-decoration: underline;
+    color: #0056b3;
+    white-space: nowrap;
 }
 
 /* 🟢 予約対象日と車種の太字化 */
@@ -140,6 +142,7 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
 #reservationTable .cancel-btn { background: linear-gradient(to bottom, #e74c3c, #c0392b) !important; }
 
 
+/* 🟢 A. スマホ全体（767px以下） */
 @media (max-width: 767px) {
     .sticky-top-container { padding: 5px 2px 0 2px; }
     #reservationTable th, #reservationTable td { font-size: 13px; }
@@ -147,41 +150,36 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
     .btn { padding: 6px 8px !important; font-size: 12px !important; }
 }
 
-/* 🟢 スマホ縦画面（480px以下）：列幅の最終黄金比 */
+/* 🟢 B. スマホ縦画面（480px以下）：比率を強制固定 */
 @media (max-width: 480px) {
     #reservationTable {
         table-layout: fixed !important;
         width: 100% !important;
     }
-    
-    /* 🔴 比率を再調整（合計100%） */
-    #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; } /* 日付 */
-    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 17% !important; } /* 車種 */
-    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 10% !important; } /* 時間 */
-    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 26% !important; } /* 👈状態(30→26へ微減) */
-    #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 15% !important; } /* 👈名前(13→15へ微増) */
-    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 15% !important; } /* 👈操作(13→15へ微増) */
+    /* 4列目(状態)に30%を配分し、5列目(名前)を13%に絞る */
+    #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; }
+    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 17% !important; }
+    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 11% !important; }
+    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 30% !important; } /* 👈状態を優先 */
+    #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 13% !important; } /* 👈名前を絞る */
+    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 12% !important; }
 
     .reservation-status {
-        display: block !important;
-        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
         overflow: visible !important;
-        white-space: nowrap !important;
-        text-align: center;
     }
-
-    #reservationTable th, #reservationTable td { 
-        font-size: 11px !important; 
-        padding: 4px 0px !important; 
-    }
+    #reservationTable th, #reservationTable td { font-size: 11px !important; }
 }
 
-/* 🟢 PC用設定 */
+/* 🟢 C. PC用設定（予約状態の幅を自動調整に任せない） */
 @media (min-width: 992px) {
     .reservation-inner { max-width: 1100px; margin: 0 auto; }
-    #reservationTable {
-        table-layout: auto !important; /* PCでは中身に合わせて伸縮（見出し幅を守る） */
-    }
+    #reservationTable { table-layout: auto !important; }
+    
+    /* 🔴 PCでも4列目(状態)の幅を優先的に確保する */
+    #reservationTable th:nth-child(4) { width: 150px !important; }
+    .sticky-top-container { will-change: transform; }
 }
 
 /* 8. 利用規約・操作要領ページ等 */
@@ -199,11 +197,6 @@ footer {
 }
 
 #ui-datepicker-div { z-index: 2000 !important; }
-
-/* PCで再描画時のガタつきを防止 */
-@media (min-width: 992px) {
-    .sticky-top-container { will-change: transform; }
-}
 
 html {
     overflow-anchor: none !important;

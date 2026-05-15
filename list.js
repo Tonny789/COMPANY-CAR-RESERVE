@@ -613,7 +613,7 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-  // 🟢 根本修正：CSSの!importantに勝てるように style.setProperty を使用
+    // 🟢 修正：CSSの!important設定を上書きするために setProperty を使用
     const statusCell = tr.querySelector(".reservation-status");
     const statusText = item.cr15f_yoyakustatus || "-";
     statusCell.textContent = statusText;
@@ -623,7 +623,6 @@ function renderReservationList(records, mode, loginId) {
     } else if (statusText.length >= 6) {
         statusCell.style.setProperty("font-size", "11px", "important");
     } else {
-        // 5文字以下は標準サイズ
         statusCell.style.setProperty("font-size", "13px", "important");
     }
 
