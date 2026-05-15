@@ -90,14 +90,37 @@ button:disabled,
     z-index: 900;
 }
 
+/* --- 修正箇所：90行目付近 --- */
 #reservationTable td {
     border: 1px solid #ccc !important;
     vertical-align: middle !important;
     padding: 0px 2px !important;
     height: 28px !important;
     text-align: center;
-    white-space: nowrap !important;
+    /* 🔴 !important を外し、基本は nowrap ですが、
+       個別に上書きできるようにします */
+    white-space: nowrap; 
 }
+
+/* 🟢 追加：スマホでの横幅はみ出しを物理的に止める設定 */
+.reservation-status {
+    max-width: 75px;        /* 👈 スマホ縦画面での「状態」列の最大幅 */
+    min-width: 60px;
+    overflow: hidden;       /* 👈 枠からはみ出る分を隠す */
+    text-overflow: clip;    /* 👈 はみ出た文字をカットする（JSで小さくするため） */
+    display: inline-block;
+    vertical-align: middle;
+    /* JSでの fontSize 変更を邪魔しないよう、ここには font-size を書かない */
+}
+
+/* スマホ縦向き専用の微調整 */
+@media (max-width: 480px) {
+    #reservationTable {
+        table-layout: fixed; /* 👈 テーブル全体の幅を画面内に強制固定します */
+        width: 100% !important;
+    }
+}
+
 
 /* 🟢 予約対象日と車種（旧エリア）の太字化 */
 .reservation-date-cell,

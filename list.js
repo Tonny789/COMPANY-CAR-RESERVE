@@ -613,19 +613,23 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-    // ステータスセルの制御
+    // 🟢 修正点：文字数に応じたフォントサイズの動的変更
     const statusCell = tr.querySelector(".reservation-status");
     const statusText = item.cr15f_yoyakustatus || "-";
     statusCell.textContent = statusText;
 
-    // 🟢 修正点：文字数に応じたフォントサイズの動的変更
+    // CSSの !important に負けないように、JS側で再度 nowrap を指定
+    statusCell.style.whiteSpace = "nowrap"; 
+
     if (statusText.length >= 8) {
-      statusCell.style.fontSize = "10px";  // 8〜10文字
+      statusCell.style.fontSize = "10px";  
     } else if (statusText.length >= 6) {
-      statusCell.style.fontSize = "12px";  // 6〜7文字
+      statusCell.style.fontSize = "12px";  
     } else {
-      statusCell.style.fontSize = "14px";  // 5文字以下
+      statusCell.style.fontSize = "14px";  
     }
+
+
     // 横幅突き抜け防止設定
     statusCell.style.whiteSpace = "nowrap";
     statusCell.style.overflow = "hidden";
