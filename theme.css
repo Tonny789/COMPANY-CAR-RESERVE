@@ -175,9 +175,10 @@ button:disabled,
 }
 
 /* 7. スマホ・PCレスポンシブ対応 */
+/* --- 修正後 --- */
 @media (max-width: 767px) {
     .sticky-top-container { padding: 5px 2px 0 2px; }
-    #reservationTable th, #reservationTable td { font-size: 13px !important; }
+    #reservationTable th, #reservationTable td { font-size: 13px; } /* 🔴 !importantを削除 */
     .reservation-inner h4 { font-size: 18px !important; }
     .btn { padding: 6px 8px !important; font-size: 12px !important; }
 }
