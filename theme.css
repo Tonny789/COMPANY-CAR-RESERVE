@@ -206,3 +206,21 @@ html {
     overflow: visible !important;
     min-height: 400px; /* 念のため最低限の高さを確保 */
 }
+
+/* 予約状態セルの横幅を固定し、文字が溢れないようにする */
+.reservation-status {
+    max-width: 80px;       /* 適切な幅に固定 */
+    word-break: break-all; /* 枠の端で強制改行する */
+    font-size: 14px;       /* 標準を少し小さめに */
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    white-space: normal !important; /* 横に伸びるのを防ぐ */
+}
+
+/* スマホ縦向き（幅480px以下）の場合の特別設定 */
+@media (max-width: 480px) {
+    .reservation-status {
+        font-size: 12px;   /* 文字数が多い場合に備え、最初から小さくしておく */
+        max-width: 65px;
+    }
+}
