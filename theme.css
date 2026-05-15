@@ -82,7 +82,7 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
     .reservation-status {
         display: block !important;
         width: 100% !important;
-        padding: 0 2px !important; /* 余白を2pxに抑えてスリムに */
+        padding: 0 1px !important; /* 余白を2pxに抑えてスリムに */
         box-sizing: border-box;
         overflow: visible !important;
         white-space: nowrap !important;
