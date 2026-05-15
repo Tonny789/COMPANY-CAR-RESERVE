@@ -634,7 +634,8 @@ function renderReservationList(records, mode, loginId) {
 
     tr.setAttribute("data-recordid", recordId);
 
-    if (status === "予約済み") {
+    // 🟢 ステータスが「空き」でなければ（予約済みや、ああああ等なら）取消ボタンを出す
+    if (status !== "空き") {
           cancelBtn.style.display = "inline-block";
           reserveBtn.style.display = "none";
       } else {
