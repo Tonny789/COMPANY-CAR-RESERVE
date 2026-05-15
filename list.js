@@ -613,24 +613,27 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-  // 🟢 最終微調整：ステータス文字の表示
+  // 🟢 最終統合：ステータス文字の表示と幅の強制確保
     const statusCell = tr.querySelector(".reservation-status");
     const statusText = item.cr15f_yoyakustatus || "-";
     
-    // 🔴 「空き」の前後を「半角スペース」にして、自然な幅に
+    // 🔴 「空き」の場合：前後に全角スペースを入れてブラウザに幅を意識させる
     if (statusText === "空き") {
-        statusCell.textContent = " 空き "; // 全角から半角スペースに変更
+        statusCell.textContent = "　空き　"; 
         statusCell.style.setProperty("font-size", "13px", "important");
         statusCell.style.textDecoration = "none";
         statusCell.style.color = "inherit";
         statusCell.classList.remove("clickable-update");
     } else {
-        statusCell.textContent = statusText;
+        // 🔴 予約済みの場合：前後を半角スペースにして引き締める
+        statusCell.textContent = " " + statusText + " ";
+        
         if (statusText.length >= 7) {
             statusCell.style.setProperty("font-size", "11px", "important");
         } else {
             statusCell.style.setProperty("font-size", "13px", "important");
         }
+        
         statusCell.style.cursor = "pointer";
         statusCell.style.textDecoration = "underline";
         statusCell.style.color = "#0056b3";
