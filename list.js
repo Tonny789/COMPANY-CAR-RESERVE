@@ -613,18 +613,38 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-    // 430行目付近
+  // 🟢 最終解決：データの取得と「全角スペース」による幅の強制確保
     const statusCell = tr.querySelector(".reservation-status");
-    const statusText = item.cr15f_yoyakustatus || "-";
-    statusCell.textContent = statusText;
 
-    // list.js 434行目付近
-    if (statusText.length >= 8) {
-        statusCell.style.setProperty("font-size", "10px", "important");
-    } else if (statusText.length >= 6) {
-        statusCell.style.setProperty("font-size", "11px", "important");
-    } else {
+    // 🔴 データの取得（最重要：これが無いと全ての判定が動きません）
+    const statusText = item.cr15f_yoyakustatus || "-";
+
+    // 1. 「空き」の場合の処理：前後に全角スペースを入れてブラウザに「幅」を認識させる
+    if (statusText === "空き") {
+        statusCell.textContent = "　空き　"; // 前後に全角スペースを追加
         statusCell.style.setProperty("font-size", "13px", "important");
+        statusCell.style.textDecoration = "none";
+        statusCell.style.color = "inherit";
+        statusCell.classList.remove("clickable-update");
+    } else {
+        // 2. 予約が入っている（名前やコメントがある）場合の処理
+        statusCell.textContent = statusText;
+
+        // 文字数に応じたフォントサイズ調整（10文字程度まで対応）
+        if (statusText.length >= 7) {
+            // 7文字以上（リョービ静岡あああ等）：11px
+            statusCell.style.setProperty("font-size", "11px", "important");
+        } else {
+            // 6文字以下：13px（標準）
+            statusCell.style.setProperty("font-size", "13px", "important");
+        }
+
+        // クリック可能なスタイルの付与
+        statusCell.style.cursor = "pointer";
+        statusCell.style.textDecoration = "underline";
+        statusCell.style.color = "#0056b3";
+        statusCell.classList.add("clickable-update");
+        statusCell.setAttribute("data-reserved-by", item.cr15f_name || "");
     }
 
     // アンダーライン等のクリック設定
