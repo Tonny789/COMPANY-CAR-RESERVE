@@ -617,15 +617,13 @@ function renderReservationList(records, mode, loginId) {
     const statusCell = tr.querySelector(".reservation-status");
     const statusText = item.cr15f_yoyakustatus || "-";
     
-    // 🔴 「空き」の前後を半角スペースにして、広すぎず狭すぎない幅に
+    // 🔴 「空き」の前後を「半角スペース」にして、自然な幅に
     if (statusText === "空き") {
-        statusCell.textContent = " 空き "; // 前後を半角スペースに変更
+        statusCell.textContent = " 空き "; // 全角から半角スペースに変更
         statusCell.style.setProperty("font-size", "13px", "important");
         statusCell.style.textDecoration = "none";
         statusCell.style.color = "inherit";
         statusCell.classList.remove("clickable-update");
-        // 念のためスマホで潰れすぎない最小幅を少しだけ指定（不要なら削ってください）
-        statusCell.style.minWidth = "60px"; 
     } else {
         statusCell.textContent = statusText;
         if (statusText.length >= 7) {

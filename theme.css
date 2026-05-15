@@ -68,22 +68,21 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
     .btn { padding: 6px 8px !important; font-size: 12px !important; }
 }
 
-/* 🟢 スマホ縦画面（480px以下）：120行目付近を差し替え */
 @media (max-width: 480px) {
     #reservationTable { table-layout: fixed !important; }
     
-    /* 4列目（予約状態）を32%まで確保 */
-    #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; }
-    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 22% !important; }
-    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 9% !important; } 
-    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 24% !important; } /* 👈*/
-    #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 13% !important; }
-    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 15% !important; }
+    /* 🔴 スマホ縦の最終黄金比：状態を24%に絞り、車種とボタンを広げる */
+    #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; } /* 日付 */
+    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 22% !important; } /* 👈車種(22%) */
+    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 9% !important; }  /* 時間 */
+    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 24% !important; } /* 👈状態(24%) */
+    #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 13% !important; } /* 名前 */
+    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 15% !important; } /* 👈操作(15%) */
 
- .reservation-status {
+    .reservation-status {
         display: block !important;
         width: 100% !important;
-        padding: 0 2px !important; /* 👈 4pxから2pxに減らしてスリムに */
+        padding: 0 2px !important; /* 余白を2pxに抑えてスリムに */
         box-sizing: border-box;
         overflow: visible !important;
         white-space: nowrap !important;
