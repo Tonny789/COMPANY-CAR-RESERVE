@@ -68,31 +68,25 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
     .btn { padding: 6px 8px !important; font-size: 12px !important; }
 }
 
+/* 🟢 スマホ縦画面（480px以下）：120行目付近を差し替え */
 @media (max-width: 480px) {
-    #reservationTable {
-        table-layout: fixed !important;
-        width: 100% !important;
-    }
+    #reservationTable { table-layout: fixed !important; }
     
-    /* 🔴 比率の再定義：予約状態（4列目）を確実に 30% 確保する */
+    /* 4列目（予約状態）を32%まで確保 */
     #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; }
     #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 17% !important; }
-    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 10% !important; } /* 時間 */
-    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 30% !important; } /* 👈状態(30%) */
+    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 8% !important; } 
+    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 32% !important; } /* 👈ここ */
     #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 13% !important; }
     #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 13% !important; }
 
     .reservation-status {
-        display: block !important; /* インラインからブロックに変更して幅一杯に広げる */
+        display: block !important; /* 🔴 inline-blockから変更して幅を使い切る */
         width: 100% !important;
         min-width: 0 !important;
-        overflow: visible !important; /* 🔴 これが重要：省略(...)を強制禁止 */
-        text-overflow: clip !important;
+        overflow: visible !important;
         white-space: nowrap !important;
-    }
-    #reservationTable th, #reservationTable td { 
-        font-size: 12px !important; /* 11pxだと小さすぎるので12pxに上げます */
-        padding: 4px 0px !important; 
+        text-align: center; /* 中央揃えを維持 */
     }
 }
 

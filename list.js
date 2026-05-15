@@ -618,8 +618,10 @@ function renderReservationList(records, mode, loginId) {
     const statusText = item.cr15f_yoyakustatus || "-";
     statusCell.textContent = statusText;
 
-    // 🔴 スマホ縦で省略されないための最終ロジック
-    if (statusText.length >= 7) {
+    // list.js 434行目付近
+    if (statusText.length >= 8) {
+        statusCell.style.setProperty("font-size", "10px", "important");
+    } else if (statusText.length >= 6) {
         statusCell.style.setProperty("font-size", "11px", "important");
     } else {
         statusCell.style.setProperty("font-size", "13px", "important");
