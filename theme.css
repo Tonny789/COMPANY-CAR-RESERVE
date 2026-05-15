@@ -1,6 +1,5 @@
 /* ======================================================
-   G-Ave 社有車予約システム：【最終確定・全デバイス対応版】
-   PC・スマホ横・スマホ縦の表示幅を完全に制御
+   G-Ave 社有車予約システム：【最終確定・スマホ縦特化版】
    ====================================================== */
 
 /* 1. 全体基本設定 */
@@ -12,189 +11,98 @@ body {
 .navbar-dark { background-color: #115728 !important; border: none; }
 header, footer { background-color: #115728 !important; color: #ffffff !important; }
 
-/* 🚀 2. 上部固定（Sticky）のコア設定 */
+/* 2. 上部固定（Sticky） */
 .sticky-top-container {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background-color: #ffffff;
-    padding: 10px 5px 0 5px;
-    border-bottom: 2px solid #115728;
+    position: sticky; top: 0; z-index: 1000; background-color: #ffffff;
+    padding: 10px 5px 0 5px; border-bottom: 2px solid #115728;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* 3. 操作ボタン共通設定（青色） */
+/* 3. ボタン設定 */
 .btn, .btn-default, .reservation-inner .btn, 
 #todayBtn, #prevWeekBtn, #nextWeekBtn, #calendarBtn, #myReservationBtn,
 #loginBtn, #logoutBtn {
-    background-color: #31708f !important;
-    color: #ffffff !important;
-    border: none !important;
-    font-weight: bold !important;
-    padding: 8px 12px !important;
-    margin: 2px !important;
-    border-radius: 4px !important;
-    cursor: pointer;
-    text-decoration: none !important;
-    font-size: 13px !important;
+    background-color: #31708f !important; color: #ffffff !important;
+    font-weight: bold !important; padding: 8px 12px !important; margin: 2px !important;
+    border-radius: 4px !important; font-size: 13px !important; cursor: pointer; text-decoration: none !important;
 }
 
-.btn:disabled, button:disabled, .almost-hidden {
-    background-color: #d1d1d1 !important;
-    color: #888888 !important;
-    cursor: not-allowed !important;
-    opacity: 0.6 !important;
-    pointer-events: none !important;
+.btn:disabled, .almost-hidden {
+    background-color: #d1d1d1 !important; color: #888888 !important; opacity: 0.6 !important;
 }
 
-.reservation-inner h4 {
-    text-align: center;
-    margin: 8px 0 !important;
-    font-size: 20px !important; 
-    font-weight: bold !important;
-    color: #333;
-}
+.reservation-inner h4 { text-align: center; margin: 8px 0 !important; font-size: 20px !important; font-weight: bold !important; }
 
-/* 4. 予約テーブル：基本構造 */
-.table-responsive {
-    background-color: #ffffff;
-    margin-top: 0px !important;
-    overflow: visible !important; 
-}
-
-#reservationTable { 
-    width: 100% !important; 
-    border-collapse: collapse !important; 
-    border: 1px solid #ccc !important; 
-    table-layout: auto; /* デフォルトはオート */
-}
+/* 4. テーブル基本 */
+.table-responsive { background-color: #ffffff; overflow: visible !important; }
+#reservationTable { width: 100% !important; border-collapse: collapse !important; border: 1px solid #ccc !important; table-layout: auto; }
 
 #reservationTable thead th { 
-    position: sticky;
-    top: 0;
-    background-color: #dff2e0 !important; 
-    color: #333 !important;
-    font-weight: bold !important; 
-    padding: 8px !important; 
-    border: 1px solid #ccc !important; 
-    font-size: 14px !important; 
-    text-align: center !important;
-    z-index: 900;
+    position: sticky; top: 0; background-color: #dff2e0 !important; color: #333 !important;
+    font-weight: bold !important; padding: 8px !important; border: 1px solid #ccc !important; 
+    font-size: 14px !important; z-index: 900;
 }
 
-#reservationTable td {
-    border: 1px solid #ccc !important;
-    vertical-align: middle !important;
-    padding: 0px 2px !important;
-    height: 28px !important;
-    text-align: center;
-    white-space: nowrap; 
-}
+#reservationTable td { border: 1px solid #ccc !important; vertical-align: middle !important; padding: 0px 2px !important; height: 28px !important; text-align: center; white-space: nowrap; }
 
-/* 🟢 予約状態セルの個別設定（PC・スマホ横の共通最小幅） */
-.reservation-status {
-    display: inline-block;
-    vertical-align: middle;
-    min-width: 110px; /* PCでの幅不足を防止 */
-    text-decoration: underline;
-    color: #0056b3;
-    word-break: keep-all; 
-}
-
-.reservation-date-cell, .reservation-model {
-    font-weight: bold !important;
-    color: #000;
-}
-
+.reservation-status { display: inline-block; vertical-align: middle; min-width: 110px; text-decoration: underline; color: #0056b3; word-break: keep-all; }
+.reservation-date-cell, .reservation-model { font-weight: bold !important; color: #000; }
 #reservationTable .template { display: none !important; }
-
-#reservationTable th:last-child, #reservationTable td:last-child {
-    width: 62px !important;
-    min-width: 62px !important;
-    max-width: 62px !important;
-    padding: 0 !important;
-}
+#reservationTable th:last-child, #reservationTable td:last-child { width: 62px !important; }
 
 #reservationTable .reserve-btn, #reservationTable .cancel-btn {
-    width: 56px !important; 
-    height: 22px !important;
-    line-height: 22px !important;
-    color: #ffffff !important;
-    font-size: 12px !important;
-    font-weight: bold !important;
-    border-radius: 3px !important;
-    margin: 2px auto !important;
+    width: 56px !important; height: 22px !important; line-height: 22px !important; color: #ffffff !important;
+    font-size: 12px !important; font-weight: bold !important; border-radius: 3px !important; margin: 2px auto !important;
 }
-
 #reservationTable .reserve-btn { background: linear-gradient(to bottom, #1e8449, #196f3d) !important; }
 #reservationTable .cancel-btn { background: linear-gradient(to bottom, #e74c3c, #c0392b) !important; }
 
 /* ------------------------------------------------------
-   ここからデバイス別の幅制御（重要：順序が解決の鍵です）
+   スマホ・レスポンシブ最終調整
    ------------------------------------------------------ */
 
-/* 🟢 A. スマホ全体（767px以下）の基本設定 */
+/* 🟢 A. スマホ全体（767px以下） */
 @media (max-width: 767px) {
     .sticky-top-container { padding: 5px 2px 0 2px; }
     #reservationTable th, #reservationTable td { font-size: 13px; }
-    .reservation-inner h4 { font-size: 18px !important; }
     .btn { padding: 6px 8px !important; font-size: 12px !important; }
 }
 
-/* 🟢 B. スマホ縦画面（480px以下）：比率を「物理的」に強制固定 */
+/* 🟢 B. スマホ縦画面（480px以下）：【ここが今回のメイン修正】 */
 @media (max-width: 480px) {
     #reservationTable {
-        table-layout: fixed !important; /* ブラウザの自動計算を停止 */
-        width: 100% !important;
+        table-layout: fixed !important; /* 幅指定を絶対厳守させる */
     }
-    /* 1:日付, 2:車種, 3:時間, 4:状態, 5:名前, 6:操作 */
-    #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; }
-    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 17% !important; }
-    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 10% !important; } /* 時間(狭) */
-    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 28% !important; } /* 状態(広) */
-    #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 14% !important; } /* 名前 */
-    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 14% !important; } /* 操作 */
+    
+    /* 比率を再配分：3列目（時間）を最小限の8%に削り、4列目（状態）を32%まで拡大 */
+    #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; } /* 日付 */
+    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 17% !important; } /* 車種 */
+    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 8% !important; }  /* 👈時間(極小) */
+    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 32% !important; } /* 👈状態(最大) */
+    #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 13% !important; } /* 名前 */
+    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 13% !important; } /* 操作 */
 
     .reservation-status {
-        min-width: 0 !important; /* スマホでは固定幅を解除し比率を優先 */
+        min-width: 0 !important;
         max-width: 100% !important;
-        overflow: visible !important;
+        overflow: visible !important; /* 省略(..)を禁止 */
         white-space: nowrap !important;
     }
     #reservationTable th, #reservationTable td { 
-        font-size: 11px !important; 
+        font-size: 11px !important; /* スマホ縦は11px以下で詰め込む */
         padding: 4px 0px !important; 
     }
 }
 
-/* 🟢 C. PC用設定（予約状態の幅を見出し幅と一致させる） */
+/* 🟢 C. PC設定 */
 @media (min-width: 992px) {
     .reservation-inner { max-width: 1100px; margin: 0 auto; }
-    #reservationTable {
-        table-layout: auto !important; 
-    }
-    /* PCでの見出し(th)と中身(td)の幅を150pxで固定し、ズレを防止 */
-    #reservationTable th:nth-child(4),
-    #reservationTable td:nth-child(4) { 
-        min-width: 150px !important; 
-        width: 150px !important;
-    }
-    .sticky-top-container { will-change: transform; }
+    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 150px !important; }
 }
 
 /* 8. 利用規約・フッター・その他 */
-.terms-container, .manual-container {
-    padding: 20px; background-color: #f9f9f9; border-radius: 8px; border: 1px solid #ddd;
-    margin: 20px auto; max-width: 900px; color: #333; line-height: 1.6;
-}
-.terms-title, .manual-title { color: #115728; font-weight: bold; text-align: center; border-bottom: 2px solid #115728; padding-bottom: 10px; }
-.manual-content h4 { font-size: 18px; color: #ffffff; background-color: #31708f; padding: 6px 15px; border-radius: 4px; }
-
-footer {
-    background-color: #115728 !important; color: #ffffff !important;
-    padding: 15px 20px !important; text-align: center; font-size: 14px; margin-top: 30px !important;
-}
-
+.terms-container, .manual-container { padding: 20px; background-color: #f9f9f9; margin: 20px auto; max-width: 900px; line-height: 1.6; }
+footer { background-color: #115728 !important; color: #ffffff !important; padding: 15px 20px !important; text-align: center; margin-top: 30px !important; }
 #ui-datepicker-div { z-index: 2000 !important; }
 html { overflow-anchor: none !important; scroll-behavior: auto !important; }
-.table-responsive { overflow: visible !important; min-height: 400px; }
+.table-responsive { min-height: 400px; }

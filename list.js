@@ -618,13 +618,13 @@ function renderReservationList(records, mode, loginId) {
     const statusText = item.cr15f_yoyakustatus || "-";
     statusCell.textContent = statusText;
 
+    // list.js のフォントサイズ変更部分がこのようになっていれば完璧です
     if (statusText.length >= 8) {
         statusCell.style.setProperty("font-size", "10px", "important");
     } else if (statusText.length >= 6) {
         statusCell.style.setProperty("font-size", "11px", "important");
     } else {
-        // 標準サイズ（CSS側の設定に従う）
-        statusCell.style.setProperty("font-size", "13px");
+        statusCell.style.setProperty("font-size", "13px", "important");
     }
 
     // アンダーライン等のクリック設定
