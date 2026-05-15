@@ -544,25 +544,22 @@ function renderReservationList(records, mode, loginId) {
   // 🚀 【PC対策】描き換え中の「高さゼロ」を防ぐため、現在の高さを一時的に固定
   const tableContainer = document.querySelector(".table-responsive");
   if (tableContainer) {
-      // 現在のピクセル高さを取得してmin-heightに設定
-      const currentHeight = tableContainer.offsetHeight;
-      tableContainer.style.minHeight = currentHeight + "px";
+    const currentHeight = tableContainer.offsetHeight;
+    tableContainer.style.minHeight = currentHeight + "px";
   }
 
-  // 1. お掃除：テンプレート以外の「目に見えている古いデータ行」だけを確実に削除
+  // 1. お掃除
   const oldRows = tbody.querySelectorAll("tr:not(.template)");
   oldRows.forEach(row => row.remove());
 
-  // 2. テンプレートの確保（ここが最重要！）
+  // 2. テンプレートの確保
   let template = tbody.querySelector(".template");
   if (!template) {
     template = document.querySelector("#reservationTable .template");
   }
 
-  // 3. 最終チェック
   if (!template) {
     console.error("FATAL ERROR: テンプレート行がHTML内に存在しません。");
-    // エラー時も高さを戻しておく
     if (tableContainer) tableContainer.style.minHeight = "auto";
     return;
   }
@@ -570,7 +567,6 @@ function renderReservationList(records, mode, loginId) {
   // 4. データがない場合の処理
   if (!records || records.length === 0) {
     if (noDataMessage) noDataMessage.style.display = "block";
-    // データなしの場合も高さを戻す
     if (tableContainer) tableContainer.style.minHeight = "auto";
     return;
   } else {
@@ -580,11 +576,11 @@ function renderReservationList(records, mode, loginId) {
   let lastDate = "";
   let lastArea = "";
 
-  // 5. 届いたデータを1件ずつループで回す
+  // 5. 描画ループ
   records.forEach((item) => {
     const tr = template.cloneNode(true);
-    tr.classList.remove("template", "d-none"); 
-    tr.style.display = ""; 
+    tr.classList.remove("template", "d-none");
+    tr.style.display = "";
 
     const dateKey = item.cr15f_yoyaku_taishobi || "";
     const currentArea = item.cr15f_model || "-";
@@ -592,13 +588,13 @@ function renderReservationList(records, mode, loginId) {
     // --- 日付の表示判定 ---
     const dateCell = tr.querySelector(".reservation-date-cell");
     if (dateKey === lastDate) {
-        dateCell.textContent = ""; 
+      dateCell.textContent = "";
     } else {
-        const m = dateKey.substring(4, 6);
-        const d = dateKey.substring(6, 8);
-        dateCell.textContent = `${m}月${d}日`; 
-        lastDate = dateKey;
-        lastArea = ""; 
+      const m = dateKey.substring(4, 6);
+      const d = dateKey.substring(6, 8);
+      dateCell.textContent = `${m}月${d}日`;
+      lastDate = dateKey;
+      lastArea = "";
     }
 
     // --- 車種の表示判定 ---
@@ -612,61 +608,57 @@ function renderReservationList(records, mode, loginId) {
 
     // --- 各項目の流し込み ---
     tr.querySelector(".reservation-time").textContent = item.cr15f_time || "-";
-    tr.querySelector(".reservation-status").textContent = item.cr15f_yoyakustatus || "-";
-    //tr.querySelector(".reservation-name").textContent =
-    //  item.cr15f_yoyakustatus === "予約済み" ? item.cr15f_name || "-" : "-";
-      
-    // ステータスが「空き」ではない（何らかの予約が入っている）なら、名前を表示する
+    
+    // 名前：ステータスが「空き」以外なら表示する
     tr.querySelector(".reservation-name").textContent =
-      item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";  
+      item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-    // --- 修正後 ---
+    // ステータスセルの制御
     const statusCell = tr.querySelector(".reservation-status");
     const statusText = item.cr15f_yoyakustatus || "-";
     statusCell.textContent = statusText;
 
-    // 「予約済み」の場合のみ、クリック可能にする設定を追加
-    //if (statusText === "予約済み") {
-    //    statusCell.style.cursor = "pointer";
-    //    statusCell.style.textDecoration = "underline";
-    //    statusCell.style.color = "#0056b3"; // リンクのように青くする
-    //    statusCell.classList.add("clickable-update"); // 目印のクラス
-    //    statusCell.setAttribute("data-reserved-by", item.cr15f_name || ""); // 判定用に名前を保存
-    //}
-
-    // 「空き」以外（ああああ等も含む）なら、修正可能にする
-    if (statusText !== "空き") {
-        statusCell.style.cursor = "pointer";
-        statusCell.style.textDecoration = "underline";
-        statusCell.style.color = "#0056b3"; 
-        statusCell.classList.add("clickable-update"); 
-        statusCell.setAttribute("data-reserved-by", item.cr15f_name || ""); 
+    // 🟢 修正点：文字数に応じたフォントサイズの動的変更
+    if (statusText.length >= 8) {
+      statusCell.style.fontSize = "10px";  // 8〜10文字
+    } else if (statusText.length >= 6) {
+      statusCell.style.fontSize = "12px";  // 6〜7文字
+    } else {
+      statusCell.style.fontSize = "14px";  // 5文字以下
     }
+    // 横幅突き抜け防止設定
+    statusCell.style.whiteSpace = "nowrap";
+    statusCell.style.overflow = "hidden";
+    statusCell.style.textOverflow = "ellipsis";
 
+    // 予約状態が「空き」以外なら、クリック（修正）を可能にする
+    if (statusText !== "空き") {
+      statusCell.style.cursor = "pointer";
+      statusCell.style.textDecoration = "underline";
+      statusCell.style.color = "#0056b3";
+      statusCell.classList.add("clickable-update");
+      statusCell.setAttribute("data-reserved-by", item.cr15f_name || "");
+    }
 
     // --- ボタンの制御 ---
     const reserveBtn = tr.querySelector(".reserve-btn");
     const cancelBtn = tr.querySelector(".cancel-btn");
     const recordId = item.cr15f_company_careid;
-    const status = item.cr15f_yoyakustatus;
-
     tr.setAttribute("data-recordid", recordId);
 
-    // 🟢 ステータスが「空き」でなければ（予約済みや、ああああ等なら）取消ボタンを出す
-    if (status !== "空き") {
-          cancelBtn.style.display = "inline-block";
-          reserveBtn.style.display = "none";
-      } else {
-          reserveBtn.style.display = "inline-block";
-          cancelBtn.style.display = "none";
-      }
+    // 「空き」でなければ「取消」ボタン、空きなら「予約」ボタン
+    if (statusText !== "空き") {
+      cancelBtn.style.display = "inline-block";
+      reserveBtn.style.display = "none";
+    } else {
+      reserveBtn.style.display = "inline-block";
+      cancelBtn.style.display = "none";
+    }
 
-    // 最後に表に追加
     tbody.appendChild(tr);
   });
 
-  // 🚀 【PC対策】描画が完全に終わった後に、固定していた高さを解除
-  // わずかな遅延を入れることで、ブラウザがスクロールを維持する時間を稼ぎます
+  // 🚀 高さ制限解除
   setTimeout(() => {
     if (tableContainer) tableContainer.style.minHeight = "auto";
   }, 100);
