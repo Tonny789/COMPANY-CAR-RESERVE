@@ -139,38 +139,33 @@ header, footer { background-color: #115728 !important; color: #ffffff !important
 #reservationTable .reserve-btn { background: linear-gradient(to bottom, #1e8449, #196f3d) !important; }
 #reservationTable .cancel-btn { background: linear-gradient(to bottom, #e74c3c, #c0392b) !important; }
 
-/* 🟢 スマホ縦画面（480px以下）専用：列幅を完全にコントロールする */
 @media (max-width: 480px) {
     #reservationTable {
-        /* 列の幅をブラウザ任せにせず、指定通りに固定する */
-        table-layout: fixed !important;
+        table-layout: fixed !important; /* ブラウザの自動計算を完全に止める */
         width: 100% !important;
     }
     
-    /* 🔴 列ごとの幅を黄金比で再定義（合計100%） */
-    #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17%; } /* 日付 */
-    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 16%; } /* 車種 */
-    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 13%; } /* 時間 */
-    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 26%; } /* 👈予約状態（ここを大幅に広げる） */
-    #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 14%; } /* 名前 */
-    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 14%; } /* 操作 */
+    /* 🔴 列幅の絶対死守（合計100%） */
+    /* 時間帯(3列目)を限界まで絞り、予約状態(4列目)にスペースを譲る */
+    #reservationTable th:nth-child(1), #reservationTable td:nth-child(1) { width: 17% !important; } /* 日付 */
+    #reservationTable th:nth-child(2), #reservationTable td:nth-child(2) { width: 17% !important; } /* 車種 */
+    #reservationTable th:nth-child(3), #reservationTable td:nth-child(3) { width: 10% !important; } /* 👈 時間帯(極小) */
+    #reservationTable th:nth-child(4), #reservationTable td:nth-child(4) { width: 30% !important; } /* 👈 予約状態(最大) */
+    #reservationTable th:nth-child(5), #reservationTable td:nth-child(5) { width: 13% !important; } /* 予約者 */
+    #reservationTable th:nth-child(6), #reservationTable td:nth-child(6) { width: 13% !important; } /* 操作 */
 
     .reservation-status {
-        /* 幅いっぱい使い、省略(...)をさせない設定 */
-        min-width: 0 !important;
-        max-width: 100% !important;
-        overflow: visible !important;
-        text-overflow: clip !important;
-        white-space: nowrap !important;
         display: block !important;
+        width: 100% !important;
+        overflow: visible !important;
+        white-space: nowrap !important; /* 改行させず、JSのフォント縮小に任せる */
         text-align: center;
     }
 
-    /* セル内の余白を極限まで削って情報を詰め込む */
     #reservationTable th, #reservationTable td { 
-        font-size: 11px !important; /* スマホ縦は11pxで統一 */
-        padding: 2px 0 !important; 
-        letter-spacing: -0.5px; /* 文字間隔を微調整 */
+        font-size: 11px !important; 
+        padding: 4px 0px !important; 
+        letter-spacing: -0.5px;
     }
 }
 

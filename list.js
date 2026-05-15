@@ -613,42 +613,33 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-    // 🟢 修正点：文字数に応じたフォントサイズの動的変更
+  // 🟢 根本修正：CSSの!importantに勝てるように style.setProperty を使用
     const statusCell = tr.querySelector(".reservation-status");
     const statusText = item.cr15f_yoyakustatus || "-";
     statusCell.textContent = statusText;
 
-    // CSSの !important に負けないように、JS側で再度 nowrap を指定
-    statusCell.style.whiteSpace = "nowrap"; 
-
     if (statusText.length >= 8) {
-      statusCell.style.fontSize = "10px";  
+        // 8文字以上（リョービ静岡など）：10px相当へ
+        statusCell.style.setProperty("font-size", "10px", "important");
     } else if (statusText.length >= 6) {
-      statusCell.style.fontSize = "12px";  
+        // 6-7文字：11px相当へ
+        statusCell.style.setProperty("font-size", "11px", "important");
     } else {
-      statusCell.style.fontSize = "14px";  
+        // 5文字以下：標準
+        statusCell.style.setProperty("font-size", "13px");
     }
 
-
-    // 横幅突き抜け防止設定
-    statusCell.style.whiteSpace = "nowrap";
-    statusCell.style.overflow = "hidden";
-    statusCell.style.textOverflow = "ellipsis";
-
-   // 予約状態が「空き」以外なら、クリック（修正）を可能にする
+    // アンダーライン等のクリック設定
     if (statusText !== "空き") {
-      statusCell.style.cursor = "pointer";
-      statusCell.style.textDecoration = "underline";
-      statusCell.style.color = "#0056b3";
-      statusCell.classList.add("clickable-update");
-      statusCell.setAttribute("data-reserved-by", item.cr15f_name || "");
+        statusCell.style.cursor = "pointer";
+        statusCell.style.textDecoration = "underline";
+        statusCell.style.color = "#0056b3";
+        statusCell.classList.add("clickable-update");
+        statusCell.setAttribute("data-reserved-by", item.cr15f_name || "");
     } else {
-      // 🟢 追加：ステータスが「空き」の場合はスタイルを標準に戻す
-      statusCell.style.cursor = "default";
-      statusCell.style.textDecoration = "none";
-      statusCell.style.color = ""; // 標準の色に戻す
-      statusCell.classList.remove("clickable-update");
-      statusCell.removeAttribute("data-reserved-by");
+        statusCell.style.textDecoration = "none";
+        statusCell.style.color = "inherit";
+        statusCell.classList.remove("clickable-update");
     }
 
     // --- ボタンの制御 ---
