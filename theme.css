@@ -102,16 +102,28 @@ button:disabled,
     white-space: nowrap; 
 }
 
-/* 🟢 追加：スマホでの横幅はみ出しを物理的に止める設定 */
+
+/* --- 修正後 --- */
 .reservation-status {
-    max-width: 75px;        /* 👈 スマホ縦画面での「状態」列の最大幅 */
-    min-width: 60px;
-    overflow: hidden;       /* 👈 枠からはみ出る分を隠す */
-    text-overflow: clip;    /* 👈 はみ出た文字をカットする（JSで小さくするため） */
+    /* PCでは幅を固定せず、中身に合わせて広がるようにする */
+    min-width: 80px;
     display: inline-block;
     vertical-align: middle;
-    /* JSでの fontSize 変更を邪魔しないよう、ここには font-size を書かない */
+    text-decoration: underline;
+    color: #0056b3;
+    word-break: keep-all; /* PCでは途中で改行させない */
 }
+
+/* 🟢 スマホ（縦）の時だけ、物理的に幅を制限する */
+@media (max-width: 480px) {
+    .reservation-status {
+        max-width: 70px;      /* スマホでの最大幅 */
+        overflow: hidden;
+        text-overflow: clip;
+        white-space: nowrap;
+    }
+}
+
 
 /* スマホ縦向き専用の微調整 */
 @media (max-width: 480px) {
