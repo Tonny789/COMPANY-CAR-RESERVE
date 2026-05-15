@@ -595,8 +595,12 @@ function renderReservationList(records, mode, loginId) {
     // --- 各項目の流し込み ---
     tr.querySelector(".reservation-time").textContent = item.cr15f_time || "-";
     tr.querySelector(".reservation-status").textContent = item.cr15f_yoyakustatus || "-";
+    //tr.querySelector(".reservation-name").textContent =
+    //  item.cr15f_yoyakustatus === "予約済み" ? item.cr15f_name || "-" : "-";
+      
+    // ステータスが「空き」ではない（何らかの予約が入っている）なら、名前を表示する
     tr.querySelector(".reservation-name").textContent =
-      item.cr15f_yoyakustatus === "予約済み" ? item.cr15f_name || "-" : "-";
+      item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";  
 
     // --- 修正後 ---
     const statusCell = tr.querySelector(".reservation-status");
@@ -604,12 +608,21 @@ function renderReservationList(records, mode, loginId) {
     statusCell.textContent = statusText;
 
     // 「予約済み」の場合のみ、クリック可能にする設定を追加
-    if (statusText === "予約済み") {
+    //if (statusText === "予約済み") {
+    //    statusCell.style.cursor = "pointer";
+    //    statusCell.style.textDecoration = "underline";
+    //    statusCell.style.color = "#0056b3"; // リンクのように青くする
+    //    statusCell.classList.add("clickable-update"); // 目印のクラス
+    //    statusCell.setAttribute("data-reserved-by", item.cr15f_name || ""); // 判定用に名前を保存
+    //}
+
+    // 「空き」以外（ああああ等も含む）なら、修正可能にする
+    if (statusText !== "空き") {
         statusCell.style.cursor = "pointer";
         statusCell.style.textDecoration = "underline";
-        statusCell.style.color = "#0056b3"; // リンクのように青くする
-        statusCell.classList.add("clickable-update"); // 目印のクラス
-        statusCell.setAttribute("data-reserved-by", item.cr15f_name || ""); // 判定用に名前を保存
+        statusCell.style.color = "#0056b3"; 
+        statusCell.classList.add("clickable-update"); 
+        statusCell.setAttribute("data-reserved-by", item.cr15f_name || ""); 
     }
 
 
