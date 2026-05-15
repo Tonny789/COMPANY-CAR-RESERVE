@@ -613,33 +613,26 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-  // 🟢 最終解決：データの取得と「全角スペース」による幅の強制確保
+  // 🟢 最終微調整：ステータス文字の表示
     const statusCell = tr.querySelector(".reservation-status");
-
-    // 🔴 データの取得（最重要：これが無いと全ての判定が動きません）
     const statusText = item.cr15f_yoyakustatus || "-";
-
-    // 1. 「空き」の場合の処理：前後に全角スペースを入れてブラウザに「幅」を認識させる
+    
+    // 🔴 「空き」の前後を半角スペースにして、広すぎず狭すぎない幅に
     if (statusText === "空き") {
-        statusCell.textContent = "　空き　"; // 前後に全角スペースを追加
+        statusCell.textContent = " 空き "; // 前後を半角スペースに変更
         statusCell.style.setProperty("font-size", "13px", "important");
         statusCell.style.textDecoration = "none";
         statusCell.style.color = "inherit";
         statusCell.classList.remove("clickable-update");
+        // 念のためスマホで潰れすぎない最小幅を少しだけ指定（不要なら削ってください）
+        statusCell.style.minWidth = "60px"; 
     } else {
-        // 2. 予約が入っている（名前やコメントがある）場合の処理
         statusCell.textContent = statusText;
-
-        // 文字数に応じたフォントサイズ調整（10文字程度まで対応）
         if (statusText.length >= 7) {
-            // 7文字以上（リョービ静岡あああ等）：11px
             statusCell.style.setProperty("font-size", "11px", "important");
         } else {
-            // 6文字以下：13px（標準）
             statusCell.style.setProperty("font-size", "13px", "important");
         }
-
-        // クリック可能なスタイルの付与
         statusCell.style.cursor = "pointer";
         statusCell.style.textDecoration = "underline";
         statusCell.style.color = "#0056b3";
