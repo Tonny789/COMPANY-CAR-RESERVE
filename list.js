@@ -1194,7 +1194,7 @@ document.addEventListener("click", async function(event) {
     return; // 処理終了
   }
 
-  // 修正処理の部分（統合した addEventListener の中）
+// 🟢 予約内容修正クリック処理（表示メッセージの充実版）
   if (updateTarget) {
     event.preventDefault();
     const loginId = getLoginInfo();
@@ -1206,12 +1206,25 @@ document.addEventListener("click", async function(event) {
     }
 
     const row = event.target.closest("tr");
+    if (!row) return;
     const recordId = row.getAttribute("data-recordid");
-    const time = row.querySelector(".reservation-time").textContent;
 
-    // 🟢 prompt の代わりに showAlert を使用
-    showAlert(`${time} のコメント内容を修正します。`, async (newContent) => {
-        // ここから fetch 処理
+    // 🔴 修正：既存の getRowDetail を使って、該当行の日付・車種・時間をまとめて取得
+    const details = getRowDetail(row); 
+    
+    // 現在セルに表示されている文字列（修正前のコメント）を取得して初期値にする
+    const currentContent = updateTarget.textContent.trim();
+
+    // 🔴 修正：メッセージを「日付＋車種＋時間」の親切な表示に変更
+    const alertMessage = `${details.date} ${details.area}【${details.time}】のコメント内容を修正します。`;
+
+    // 第4引数に現在の設定値を渡してアラートを開く
+    showAlert(alertMessage, async (newContent) => {
+        
+        if (newContent === currentContent) {
+            return; 
+        }
+
         showAlert("更新中...", null, "loading");
         try {
             const res = await fetch(FLOW_URL_UPDATE_CONTENT, {
@@ -1232,61 +1245,11 @@ document.addEventListener("click", async function(event) {
             closeAlert();
             showAlert("通信エラーが発生しました。");
         }
-    }, "input"); // 第3引数に "input" を渡す
+    }, "input", currentContent);
     return;
   }
 
-  // 2. 「予約済み」テキスト（修正）がクリックされた場合の処理
-//  if (updateTarget) {
-//    event.preventDefault();
-//
-//    const loginId = getLoginInfo(); // ログオン者
-//    const reservedBy = updateTarget.getAttribute("data-reserved-by");
-//
-    // ３．修正制限：本人の場合のみ修正可能
-//    if (!loginId || loginId !== reservedBy.trim().toUpperCase()) {
-//        showAlert(`ご自身の予約（${reservedBy}様分）のみ内容を修正できます。`);
-//        return;
-//    }
-//
-//    const row = event.target.closest("tr");
-//    if (!row) return;
-//    const recordId = row.getAttribute("data-recordid");
-//    const time = row.querySelector(".reservation-time").textContent;
-//
-    // １．修正内容入力プロンプトの表示
-//    const newContent = prompt(`${time} の予約内容を修正します。\n新しい内容を入力してください：`, "");
-//
-//    if (newContent === null) return; // キャンセル時
-//    if (newContent.trim() === "") { 
-//        showAlert("内容は空欄にできません。"); 
-//        return; 
-//    }
-//
-//    showAlert("更新中...", null, "loading");
-//    try {
-//        const res = await fetch(FLOW_URL_UPDATE_CONTENT, {
-//            method: "POST",
-//            headers: { "Content-Type": "application/json" },
-//            body: JSON.stringify({ recordId: recordId, comment: newContent })
-//        });
-//        const result = await res.json();
-//        closeAlert();
-//
-//        if (result.status === "success") {
-//            showAlert("予約内容を修正しました。", () => {
-//                loadWeekView(startDateRef.date, "WEEK"); // 再描画
-//            });
-//        } else {
-//            showAlert("修正に失敗しました。");
-//        }
-//    } catch (e) {
-//        closeAlert();
-//        showAlert("通信エラーが発生しました。");
-//    }
-//    return; // 処理終了
-//  }
-});
+
 // 🟢 ファイルの最後にこれを追記することで、画面を開いた時にデータが読み込まれます
 document.addEventListener("DOMContentLoaded", () => {
     // ログイン状態を確認して一覧を表示

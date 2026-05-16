@@ -103,3 +103,25 @@ footer { background-color: #115728 !important; color: #ffffff !important; paddin
 #ui-datepicker-div { z-index: 2000 !important; }
 html { overflow-anchor: none !important; scroll-behavior: auto !important; }
 .table-responsive { min-height: 400px; }
+
+/* ======================================================
+   カスタムポップアップ内の入力ボックス・デザイン調整
+   ====================================================== */
+#alertInput {
+    width: 90% !important;
+    margin: 10px auto !important;
+    padding: 8px !important;
+    font-size: 16px !important;
+    /* 🔴 枠線を「2pxの太さ」にし、色は少し濃いめのグレー（#666）でクッキリさせます */
+    border: 2px solid #666666 !important; 
+    border-radius: 4px !important;
+    background-color: #ffffff !important;
+    box-sizing: border-box !important;
+}
+
+/* 入力欄にタップ（フォーカス）した時は、会社のテーマカラー（緑）の太線にする */
+#alertInput:focus {
+    border-color: #115728 !important;
+    outline: none !important;
+    box-shadow: 0 0 5px rgba(17, 87, 40, 0.5) !important;
+}
