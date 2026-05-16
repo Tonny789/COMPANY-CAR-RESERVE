@@ -397,19 +397,27 @@ function renderReservationList(records, mode, loginId) {
 
     if (statusText === "空き") {
         statusCell.style.setProperty("font-size", "13px", "important");
-        statusCell.style.letterSpacing = "normal";
+        statusCell.style.letterSpacing = "normal"; // 通常の文字間隔
         statusCell.style.textDecoration = "none";
         statusCell.style.color = "inherit";
         statusCell.classList.remove("clickable-update");
         statusCell.removeAttribute("data-reserved-by");
     } else {
-        if (statusText.length >= 8) {
-            statusCell.style.setProperty("font-size", "10px", "important");
-        } else if (statusText.length >= 6) {
+        // 🔴 確実に文字数をチェックして、16%幅の中に10文字を詰め込む
+        if (statusText.length >= 7) {
+            // 8文字以上（10文字入力対応）：8.5px＋文字間を少し詰める
+            statusCell.style.setProperty("font-size", "8.5px", "important");
+            statusCell.style.letterSpacing = "-0.3px"; 
+        } else if (statusText.length >= 5) {
+            // 6〜7文字：11px
             statusCell.style.setProperty("font-size", "11px", "important");
+            statusCell.style.letterSpacing = "normal";
         } else {
+            // 5文字以下：13px（標準）
             statusCell.style.setProperty("font-size", "13px", "important");
+            statusCell.style.letterSpacing = "normal";
         }
+        
         statusCell.style.cursor = "pointer";
         statusCell.style.textDecoration = "underline";
         statusCell.style.color = "#0056b3";
