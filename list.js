@@ -1201,7 +1201,7 @@ document.addEventListener("click", async function(event) {
     const reservedBy = updateTarget.getAttribute("data-reserved-by");
 
     if (!loginId || loginId !== reservedBy.trim().toUpperCase()) {
-        showAlert(`ご自身の予約（${reservedBy}様分）のみ内容を修正できます。`);
+        showAlert(`予約者（${reservedBy}様）だけが内容を修正できます。`);
         return;
     }
 
@@ -1222,7 +1222,7 @@ document.addEventListener("click", async function(event) {
             const result = await res.json();
             closeAlert();
             if (result.status === "success") {
-                showAlert("予約内容を修正しました。", () => {
+                showAlert("コメント内容を修正しました。", () => {
                     loadWeekView(startDateRef.date, "WEEK");
                 });
             } else {
