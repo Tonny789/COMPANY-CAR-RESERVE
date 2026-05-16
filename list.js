@@ -613,34 +613,35 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-// 🟢 修正＆縮小ロジック復活：ステータス文字の表示とフォントサイズ自動制御
+// 🟢 最終調整：10文字はみ出し対策版ロジック
     const statusCell = tr.querySelector(".reservation-status");
     const statusText = item.cr15f_yoyakustatus || "-";
     
-    // 余計なスペースを入れずにデータを流し込む
     statusCell.textContent = statusText;
 
     if (statusText === "空き") {
-        // 「空き」の場合のスタイル設定
         statusCell.style.setProperty("font-size", "13px", "important");
+        statusCell.style.letterSpacing = "normal"; // 通常の文字間隔
         statusCell.style.textDecoration = "none";
         statusCell.style.color = "inherit";
         statusCell.classList.remove("clickable-update");
         statusCell.removeAttribute("data-reserved-by");
     } else {
-        // 🔴 確実に文字数をチェックして、狭い幅でも1行に収める自動縮小安全装置
+        // 🔴 確実に文字数をチェックして、16%幅の中に10文字を詰め込む
         if (statusText.length >= 8) {
-            // 8文字以上（リョービ静岡ああ等）：10pxに極小化
-            statusCell.style.setProperty("font-size", "10px", "important");
+            // 8文字以上（10文字入力対応）：8.5px＋文字間を少し詰める
+            statusCell.style.setProperty("font-size", "8.5px", "important");
+            statusCell.style.letterSpacing = "-0.3px"; 
         } else if (statusText.length >= 6) {
-            // 6〜7文字（リョービ静岡等）：11pxに縮小
+            // 6〜7文字：11px
             statusCell.style.setProperty("font-size", "11px", "important");
+            statusCell.style.letterSpacing = "normal";
         } else {
-            // 5文字以下：13px（標準サイズ）
+            // 5文字以下：13px（標準）
             statusCell.style.setProperty("font-size", "13px", "important");
+            statusCell.style.letterSpacing = "normal";
         }
         
-        // 予約が入っている場合のクリック・アンダーライン設定を統合
         statusCell.style.cursor = "pointer";
         statusCell.style.textDecoration = "underline";
         statusCell.style.color = "#0056b3";
