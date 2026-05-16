@@ -613,27 +613,39 @@ function renderReservationList(records, mode, loginId) {
     tr.querySelector(".reservation-name").textContent =
       item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
 
-  // 🟢 修正：余計なスペースを一切入れない
+// 🟢 修正＆縮小ロジック復活：ステータス文字の表示とフォントサイズ自動制御
     const statusCell = tr.querySelector(".reservation-status");
     const statusText = item.cr15f_yoyakustatus || "-";
     
-    if (statusText === "空き") {
-        statusCell.textContent = "空き"; // 👈 スペースなし
-    } else {
-        statusCell.textContent = statusText; // 👈 スペースなし
-    }
+    // 余計なスペースを入れずにデータを流し込む
+    statusCell.textContent = statusText;
 
-    // アンダーライン等のクリック設定
-    if (statusText !== "空き") {
+    if (statusText === "空き") {
+        // 「空き」の場合のスタイル設定
+        statusCell.style.setProperty("font-size", "13px", "important");
+        statusCell.style.textDecoration = "none";
+        statusCell.style.color = "inherit";
+        statusCell.classList.remove("clickable-update");
+        statusCell.removeAttribute("data-reserved-by");
+    } else {
+        // 🔴 確実に文字数をチェックして、狭い幅でも1行に収める自動縮小安全装置
+        if (statusText.length >= 8) {
+            // 8文字以上（リョービ静岡ああ等）：10pxに極小化
+            statusCell.style.setProperty("font-size", "10px", "important");
+        } else if (statusText.length >= 6) {
+            // 6〜7文字（リョービ静岡等）：11pxに縮小
+            statusCell.style.setProperty("font-size", "11px", "important");
+        } else {
+            // 5文字以下：13px（標準サイズ）
+            statusCell.style.setProperty("font-size", "13px", "important");
+        }
+        
+        // 予約が入っている場合のクリック・アンダーライン設定を統合
         statusCell.style.cursor = "pointer";
         statusCell.style.textDecoration = "underline";
         statusCell.style.color = "#0056b3";
         statusCell.classList.add("clickable-update");
         statusCell.setAttribute("data-reserved-by", item.cr15f_name || "");
-    } else {
-        statusCell.style.textDecoration = "none";
-        statusCell.style.color = "inherit";
-        statusCell.classList.remove("clickable-update");
     }
 
     // --- ボタンの制御 ---
