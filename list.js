@@ -781,7 +781,7 @@ document.addEventListener("click", async function(event) {
     const currentContent = updateTarget.textContent.trim();
 
     // 🔴 ご要望の「対象日・車種・今のtime」を合体させたメッセージを生成
-    const alertMessage = `${details.date} ${details.area}【${details.time}】の予約内容を修正します。`;
+    const alertMessage = `${details.date} ${details.area}【${details.time}】のコメント内容を修正します。`;
 
     // 🔴 第4引数に現在登録されているコメント（初期値）を安全に渡す
     showAlert(alertMessage, async (newContent) => {
@@ -797,7 +797,7 @@ document.addEventListener("click", async function(event) {
             const result = await res.json();
             closeAlert();
             if (result.status === "success") {
-                showAlert("予約内容を修正しました。", () => {
+                showAlert("コメント内容を修正しました。", () => {
                     loadWeekView(startDateRef.date, "WEEK");
                 });
             } else {
