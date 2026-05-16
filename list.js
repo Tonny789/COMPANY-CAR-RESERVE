@@ -1165,89 +1165,90 @@ document.addEventListener("DOMContentLoaded", async function () {
 // 【最終統合版】クリックイベント（予約・取消・内容修正）
 // ==========================================
 document.addEventListener("click", async function(event) {
-  // クリックされた要素の判定
-  const reserveBtn = event.target.closest(".reserve-btn");
-  const cancelBtn = event.target.closest(".cancel-btn");
-  const updateTarget = event.target.closest(".clickable-update");
+    // クリックされた要素の判定
+    const reserveBtn = event.target.closest(".reserve-btn");
+    const cancelBtn = event.target.closest(".cancel-btn");
+    const updateTarget = event.target.closest(".clickable-update");
 
-  // 1. 予約ボタン または 取消ボタン が押された場合の処理
-  if (reserveBtn || cancelBtn) {
-    event.preventDefault(); 
-    
-    // 🚀 現在の縦スクロール位置を記憶
-    const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
-    console.log("LOG: 位置を記憶しました:", scrollPos);
+    // 1. 予約ボタン または 取消ボタン が押された場合の処理
+    if (reserveBtn || cancelBtn) {
+        event.preventDefault(); 
+        
+        // 🚀 現在の縦スクロール位置を記憶
+        const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+        console.log("LOG: 位置を記憶しました:", scrollPos);
 
-    const row = event.target.closest("tr");
-    if (!row) return;
-    const recordId = row.getAttribute("data-recordid");
+        const row = event.target.closest("tr");
+        if (!row) return;
+        const recordId = row.getAttribute("data-recordid");
 
-    // 各処理を実行（await で完了を待つ）
-    if (reserveBtn) await handleReserveClick(recordId, reserveBtn);
-    if (cancelBtn) await handleCancelClick(recordId, cancelBtn);
+        // 各処理を実行（await で完了を待つ）
+        if (reserveBtn) await handleReserveClick(recordId, reserveBtn);
+        if (cancelBtn) await handleCancelClick(recordId, cancelBtn);
 
-    // 🚀 描画が終わった後に元の位置へ復帰
-    setTimeout(() => {
-        window.scrollTo(0, scrollPos);
-        console.log("LOG: 元の位置に強制復帰しました");
-    }, 50);
-    return; // 処理終了
-  }
-
-// 🟢 予約内容修正クリック処理（表示メッセージの充実版）
-  if (updateTarget) {
-    event.preventDefault();
-    const loginId = getLoginInfo();
-    const reservedBy = updateTarget.getAttribute("data-reserved-by");
-
-    if (!loginId || loginId !== reservedBy.trim().toUpperCase()) {
-        showAlert(`予約者（${reservedBy}様）だけが内容を修正できます。`);
-        return;
+        // 🚀 描画が終わった後に元の位置へ復帰
+        setTimeout(() => {
+            window.scrollTo(0, scrollPos);
+            console.log("LOG: 元の位置に強制復帰しました");
+        }, 50);
+        return; // 処理終了
     }
 
-    const row = event.target.closest("tr");
-    if (!row) return;
-    const recordId = row.getAttribute("data-recordid");
+    // 2. 🟢 予約内容修正クリック処理（表示メッセージの充実版）
+    if (updateTarget) {
+        event.preventDefault();
+        const loginId = getLoginInfo();
+        const reservedBy = updateTarget.getAttribute("data-reserved-by");
 
-    // 🔴 修正：既存の getRowDetail を使って、該当行の日付・車種・時間をまとめて取得
-    const details = getRowDetail(row); 
-    
-    // 現在セルに表示されている文字列（修正前のコメント）を取得して初期値にする
-    const currentContent = updateTarget.textContent.trim();
+        if (!loginId || loginId !== reservedBy.trim().toUpperCase()) {
+            showAlert(`予約者（${reservedBy}様）だけが内容を修正できます。`);
+            return;
+        }
 
-    // 🔴 修正：メッセージを「日付＋車種＋時間」の親切な表示に変更
-    const alertMessage = `${details.date} ${details.area}【${details.time}】のコメント内容を修正します。`;
+        const row = event.target.closest("tr");
+        if (!row) return;
+        const recordId = row.getAttribute("data-recordid");
 
-    // 第4引数に現在の設定値を渡してアラートを開く
-    showAlert(alertMessage, async (newContent) => {
+        // 🔴 getRowDetail を使って、該当行の日付・車種・時間をまとめて取得
+        const details = getRowDetail(row); 
         
-        if (newContent === currentContent) {
-            return; 
-        }
+        // 現在セルに表示されている文字列（修正前のコメント）を取得して初期値にする
+        const currentContent = updateTarget.textContent.trim();
 
-        showAlert("更新中...", null, "loading");
-        try {
-            const res = await fetch(FLOW_URL_UPDATE_CONTENT, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ recordId: recordId, comment: newContent })
-            });
-            const result = await res.json();
-            closeAlert();
-            if (result.status === "success") {
-                showAlert("コメント内容を修正しました。", () => {
-                    loadWeekView(startDateRef.date, "WEEK");
-                });
-            } else {
-                showAlert("修正に失敗しました。");
+        // 🔴 メッセージを「日付＋車種＋時間」のわかりやすい表示に変更
+        const alertMessage = `${details.date} ${details.area}【${details.time}】のコメント内容を修正します。`;
+
+        // 第4引数に現在の設定値を渡してアラートを開く
+        showAlert(alertMessage, async (newContent) => {
+            
+            if (newContent === currentContent) {
+                return; 
             }
-        } catch (e) {
-            closeAlert();
-            showAlert("通信エラーが発生しました。");
-        }
-    }, "input", currentContent);
-    return;
-  }
+
+            showAlert("更新中...", null, "loading");
+            try {
+                const res = await fetch(FLOW_URL_UPDATE_CONTENT, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ recordId: recordId, comment: newContent })
+                });
+                const result = await res.json();
+                closeAlert();
+                if (result.status === "success") {
+                    showAlert("コメント内容を修正しました。", () => {
+                        loadWeekView(startDateRef.date, "WEEK");
+                    });
+                } else {
+                    showAlert("修正に失敗しました。");
+                }
+            } catch (e) {
+                closeAlert();
+                showAlert("通信エラーが発生しました。");
+            }
+        }, "input", currentContent);
+        return;
+    }
+}); // 👈 🔴 閉じ忘れを修正（これで赤線エラーが消え、初期一覧が復活します）
 
 
 // 🟢 ファイルの最後にこれを追記することで、画面を開いた時にデータが読み込まれます
