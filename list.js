@@ -789,7 +789,7 @@ document.addEventListener("click", async function(event) {
     const currentContent = updateTarget.textContent.trim();
 
     // 🔴 ご要望の「対象日・車種・今のtime」を合体させたメッセージを生成
-    const alertMessage = `${details.date} ${details.area}【${details.time}】のコメント内容を修正します。`;
+    const alertMessage = `${details.date} ${details.area}【${details.time}】のコメント内容を修正します。１０文字まで。`;
 
     // 🔴 第4引数に現在登録されているコメント（初期値）を安全に渡す
     showAlert(alertMessage, async (newContent) => {
