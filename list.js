@@ -557,7 +557,27 @@ async function loadMyReservationView() {
     const startKey = formatDateKey(today);
     const endKey = "20991231"; 
     
+    // 1. 自分の将来予約をフローから取得
     const records = await fetchReservations(startKey, endKey, loginId);
+    
+    // 🔴 修正：データが0件の場合、ポップアップではなくデータ行のスペースに文字を出す
+    if (!records || records.length === 0) {
+        closeAlert(); // 「取得中...」の暗転ポップアップを安全に閉じます
+        
+        const tbody = document.getElementById("reservationTableBody");
+        if (tbody) {
+            // 一旦、古い行をすべてお掃除して綺麗にします
+            tbody.querySelectorAll("tr:not(.template)").forEach(row => row.remove());
+            
+            // 🟢 新しいデータ行（tr）を作成し、そこにメッセージを埋め込んでテーブルに表示します
+            const msgRow = document.createElement("tr");
+            msgRow.innerHTML = `<td colspan="6" style="text-align: center; color: #666; padding: 20px 0; font-weight: bold; background-color: #fff;">予約対象データはありません。</td>`;
+            tbody.appendChild(msgRow);
+        }
+        return; // 処理を終了
+    }
+    
+    // 2. データがある場合は通常通り一覧を描画
     renderReservationList(records, "MY", loginId);
 }
 
