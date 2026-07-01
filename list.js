@@ -232,14 +232,14 @@ function renderReservationList(daysArray, reservations) {
 // 週間表示のメイン処理
 // ==========================================
 async function loadWeekView(startDate, mode) {
-  // 🟢 読み込み開始の瞬間に「一覧画面処理中...」を表示
+  // 🟢 読み込み開始の瞬間にメッセージを表示
   showAlert("一覧画面処理中...", null, "loading");
 
   try {
     const pTargetDate = formatDateToYYYYMMDD(startDate);
     console.log(`[loadWeekView] 開始. 基準日: ${pTargetDate}, モード: ${mode}`);
 
-    // ① 日付ナビゲーションの計算
+    // ① 日付ナビゲーションの計算（1週間分の日付配列を取得）
     const daysArray = calculateWeekDays(startDate, mode);
     if (!daysArray || daysArray.length === 0) {
         console.error("日付配列の取得に失敗しました。");
@@ -247,12 +247,13 @@ async function loadWeekView(startDate, mode) {
         return;
     }
 
+    // カレンダーUI等の表示を更新
     updateNavigationUI(daysArray, mode);
 
-    // ② Azure Logic Apps から予約データを取得
+    // ② Azure Logic Apps から予約データを取得（非同期通信）
     const reservations = await fetchReservations(pTargetDate, mode);
 
-    // ③ 画面にテーブルをレンダリング
+    // ③ 画面にテーブルをレンダリング（描画）
     renderReservationList(daysArray, reservations);
 
     console.log("[loadWeekView] 正常終了。表示が完了しました。");
@@ -261,7 +262,7 @@ async function loadWeekView(startDate, mode) {
     console.error("[loadWeekView] 処理中に重大なエラーが発生しました:", error);
     showAlert("データの読み込みに失敗しました。再試行してください。");
   } finally {
-    // 🟢 描画完了（または通信終了）時に確実にポップアップを閉じる
+    // 🟢 描画完了、または通信終了時に確実にポップアップを閉じる
     closeAlert();
   }
 }
