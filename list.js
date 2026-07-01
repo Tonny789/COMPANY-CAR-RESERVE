@@ -737,49 +737,52 @@ function setupNavigation(startDateRef) {
     });
   }
 }
+
 // =========================
 // 初期化（門番仕様）初期化
 // =========================
 document.addEventListener("DOMContentLoaded", async function () {
-  const path = location.pathname.toLowerCase();
-
-  if (path === "/" || path.includes("index") || path.includes("home")) {
-    console.log("セキュリティチェックを開始します...");
-    const ok = await checkHomeAccess(); 
-    if (!ok) {
-        console.error("認証NG：アクセスを遮断しました。");
-        return; 
-    }
-    console.log("認証成功：システムを起動します。");
-  }
-
-  updateLoginUI();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  startDateRef.date = today;
-
-  setupLoginHandlers();
-  setupNavigation(startDateRef);
-  setupCalendar(startDateRef);
-
-  setInterval(() => { updateLoginUI(); }, 30000);
-
-  // 🟢 読み込み開始前に「一覧画面処理中...」のローディングを表示
+  // 🟢 ページを開いた瞬間に最速で「処理中」を表示します
   showAlert("一覧画面処理中...", null, "loading");
 
+  const path = location.pathname.toLowerCase();
+
   try {
-    // 完全に非同期でデータの取得と描画が終わるのを待つため、await を付与します
+    if (path === "/" || path.includes("index") || path.includes("home")) {
+      console.log("セキュリティチェックを開始します...");
+      const ok = await checkHomeAccess(); 
+      if (!ok) {
+          console.error("認証NG：アクセスを遮断しました。");
+          closeAlert(); // アクセス拒否時はアラートを閉じる
+          return; 
+      }
+      console.log("認証成功：システムを起動します。");
+    }
+
+    updateLoginUI();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    startDateRef.date = today;
+
+    setupLoginHandlers();
+    setupNavigation(startDateRef);
+    setupCalendar(startDateRef);
+
+    setInterval(() => { updateLoginUI(); }, 30000);
+
+    // 完全に非同期でデータの取得と描画が終わるのを待つ
     await loadWeekView(startDateRef.date, "WEEK");
+
   } catch (error) {
-    console.error("初期一覧の読み込みに失敗しました:", error);
+    console.error("初期処理中にエラーが発生しました:", error);
   } finally {
-    // 🟢 読み込みが完了（またはエラー終了）したらポップアップを閉じる
+    // 🟢 すべての処理（セキュリティ＋データ描画）が終わったらポップアップを閉じる
     closeAlert();
   }
 });
 
 // ==========================================
-// クリックイベント（🟢 閉じ括弧と4引数を完全修復）
+// クリックイベント
 // ==========================================
 document.addEventListener("click", async function(event) {
   const reserveBtn = event.target.closest(".reserve-btn");
@@ -815,14 +818,10 @@ document.addEventListener("click", async function(event) {
     if (!row) return;
     const recordId = row.getAttribute("data-recordid");
 
-    // 🔴 日付・車種・時間を親切にまとめて取得
     const details = getRowDetail(row); 
     const currentContent = updateTarget.textContent.trim();
-
-    // 🔴 ご要望の「対象日・車種・今のtime」を合体させたメッセージを生成
     const alertMessage = `${details.date} ${details.area}【${details.time}】のコメント内容を修正します。１０文字まで。`;
 
-    // 🔴 第4引数に現在登録されているコメント（初期値）を安全に渡す
     showAlert(alertMessage, async (newContent) => {
         if (newContent === currentContent) return; 
 
@@ -849,4 +848,4 @@ document.addEventListener("click", async function(event) {
     }, "input", currentContent);
     return;
   }
-});
+}); // 💡 一番最後の余分な「}」を削除しました
