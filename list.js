@@ -24,727 +24,433 @@ async function checkHomeAccess() {
   let raw = getCookie("authId") || "";
   let authId = decodeURIComponent(raw).trim();
 
-  if (!/^[A-Za-z0-9]{5}$/.test(authId)) {
-    authId = "firstaccess";
+  if (!authId) {
+      console.warn("[checkHomeAccess] authId なし。アクセス拒否します。");
+      window.location.replace("https://www.g-ave.com/");
+      return false;
   }
 
-  const url = "https://prod-44.japaneast.logic.azure.com:443/workflows/420771912e6e44a0ab887281e2dfdb7e/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=aNKcYEygrDv3lHO0pBbUg92tCxmELwvGPQuqeBy95U8";
+  const FLOW_URL_CHECK = "https://prod-17.eastasia.logic.azure.com:443/workflows/73426742512f4347ba017b2f6ef8ea8c/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=0-5WvC580j3iXfD23UvG7O8qY6S77C986R8Oic8DqjY";
 
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ authId: authId })
-    });
-
-    const result = await res.json();
-
-    if (result.allowed === false || result.allowed === "false") {
-      console.log("NG → ホームページ起動を停止します。");
-      window.location.href = "https://www.google.com/";
+      const response = await fetch(FLOW_URL_CHECK, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ authId: authId })
+      });
+      const data = await response.json();
+      if (data.status === "allow") {
+          return true;
+      } else {
+          window.location.replace("https://www.g-ave.com/");
+          return false;
+      }
+  } catch (error) {
+      console.error("アクセス検証エラー:", error);
+      window.location.replace("https://www.g-ave.com/");
       return false;
-    }
-
-    if (result.newAuthId && /^[A-Za-z0-9]{5}$/.test(result.newAuthId)) {
-      document.cookie = `authId=${result.newAuthId}; path=/; Max-Age=2592000; SameSite=Lax;`;
-      console.log("Cookieを保存しました:", result.newAuthId);
-    }
-
-    return true;
-  } catch (e) {
-    console.log("フロー呼び出し失敗 → 起動停止");
-    return false;
   }
 }
 
-// =========================
-// My予約ページ起動チェック
-// =========================
-async function checkMyReservationAccess() {
-  const roomID = sessionStorage.getItem("roomID");
-  if (!roomID) {
-    window.location.href = "https://www.google.com/";
-    return false;
-  }
-
-  const url = "https://prod-47.japaneast.logic.azure.com:443/workflows/9063c3619d9549399a65439ec79fb0e7/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=nr4wTdvrsGG_x7icmS7mOnOq2zOdVB9_UMJnZ-ves_Y";
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ roomNumber: roomID })
-    });
-    const result = await response.json();
-
-    if (!(result.allowed === true || result.status === "OK")) {
-      window.location.href = "https://www.google.com/";
-      return false;
-    }
-    return true;
-  } catch (e) {
-    window.location.href = "https://www.google.com/";
-    return false;
-  }
+// ==========================================
+// 日付計算ユーティリティ
+// ==========================================
+function formatDateToYYYYMMDD(dateObj) {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  return `${y}${m}${d}`;
 }
 
-// =========================
-// 共通ユーティリティ（🔴 4引数対応に完全修正）
-// =========================
-function showAlert(message, onOk, type, initVal) { 
-  const modal = document.getElementById("customAlert");
-  const msgElem = document.getElementById("alertMessage");
-  const okBtn = document.getElementById("alertOkButton");
-  const inputElem = document.getElementById("alertInput"); 
-  const cancelBtn = document.getElementById("alertCancelButton");
+function calculateWeekDays(startDate, mode) {
+  let currentStart = new Date(startDate.getTime());
+  if (mode === "TODAY") {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      currentStart = today;
+  }
+  const arr = [];
+  for (let i = 0; i < 7; i++) {
+      const d = new Date(currentStart.getTime());
+      d.setDate(currentStart.getDate() + i);
+      arr.push(d);
+  }
+  return arr;
+}
 
-  msgElem.textContent = message;
-  modal.style.display = "block";
+// ==========================================
+// UI更新（ナビゲーション・カレンダー・ログイン）
+// ==========================================
+function updateNavigationUI(daysArray, mode) {
+  if (!daysArray || daysArray.length === 0) return;
+  const first = daysArray[0];
+  const last = daysArray[daysArray.length - 1];
 
-  inputElem.style.display = "none";
-  cancelBtn.style.display = "none";
-  okBtn.style.display = "inline-block";
+  const titleStr = `${first.getFullYear()}年 ${first.getMonth() + 1}月 ${first.getDate()}日（${getJpDay(first)}）～ ` +
+                   `${last.getFullYear()}年 ${last.getMonth() + 1}月 ${last.getDate()}日（${getJpDay(last)}）`;
 
-  if (type === "loading") {
-    okBtn.style.display = "none";
-  } 
-  else if (type === "input") {
-    inputElem.style.display = "block";
-    // 🔴 初期入力文字があればボックスにあらかじめセットする
-    inputElem.value = (initVal !== undefined && initVal !== null) ? initVal : ""; 
-    cancelBtn.style.display = "inline-block";
-    
-    cancelBtn.onclick = function() {
-        modal.style.display = "none";
-    };
+  const dateTitleElem = document.getElementById("dateTitle");
+  if (dateTitleElem) {
+      dateTitleElem.textContent = titleStr;
+  }
 
-    okBtn.onclick = function() {
-        const val = inputElem.value.trim();
-        if (!val) {
-            alert("内容を入力してください。");
-            return;
-        }
-        modal.style.display = "none";
-        if (onOk) onOk(val); 
-    };
-  } 
-  else {
-    okBtn.onclick = function() {
-        modal.style.display = "none";
-        if (onOk) onOk(); 
-    };
+  const todayBtn = document.getElementById("todayBtn");
+  if (todayBtn) {
+      if (mode === "TODAY") {
+          todayBtn.classList.remove("btn-default");
+          todayBtn.classList.add("btn-success");
+      } else {
+          todayBtn.classList.remove("btn-success");
+          todayBtn.classList.add("btn-default");
+      }
+  }
+
+  const datepickerInput = document.getElementById("datepicker");
+  if (datepickerInput) {
+      datepickerInput.value = formatDateToYYYYMMDD(first);
   }
 }
 
-function closeAlert() {
-  document.getElementById("customAlert").style.display = "none";
+function getJpDay(dateObj) {
+  const days = ["日", "月", "火", "水", "木", "金", "土"];
+  return days[dateObj.getDay()];
 }
 
-function formatDateKey(date) {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  return `${yyyy}${mm}${dd}`;
-}
-
-function formatDateDisplay(date) {
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  return `${mm}月${dd}日`;
-}
-
-function parseDateKey(key) {
-  const y = parseInt(key.substring(0, 4), 10);
-  const m = parseInt(key.substring(4, 6), 10) - 1;
-  const d = parseInt(key.substring(6, 8), 10);
-  return new Date(y, m, d);
-}
-
-function addDays(date, days) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
-
-// =========================
-// ログオン状態管理
-// =========================
 function getLoginInfo() {
-  const room = localStorage.getItem("roomID");
+  const sessionUser = sessionStorage.getItem("roomID");
+  if (sessionUser) return sessionUser.trim().toUpperCase();
+
+  const localUser = localStorage.getItem("roomID");
   const expiry = localStorage.getItem("roomID_expiry");
-  if (!room || !expiry) return null;
-
-  const now = Date.now();
-  if (now > parseInt(expiry, 10)) {
-    localStorage.removeItem("roomID");
-    localStorage.removeItem("roomID_expiry");
-    return null;
+  if (localUser && expiry) {
+      if (Date.now() < parseInt(expiry, 10)) {
+          return localUser.trim().toUpperCase();
+      } else {
+          localStorage.removeItem("roomID");
+          localStorage.removeItem("roomID_expiry");
+      }
   }
-  return room.trim().toUpperCase();
+  return "";
 }
 
-function setLoginInfo(roomId) {
-  const expiresAt = Date.now() + (1000 * 60 * 60 * 24 * 30);
-  localStorage.setItem("roomID", roomId);
-  localStorage.setItem("roomID_expiry", String(expiresAt));
-}
-
-function clearLoginInfo() {
-  localStorage.removeItem("roomID");
-  localStorage.removeItem("roomID_expiry");
-}
-
-// =========================
-// 画面制御（ボタン状態）
-// =========================
 function updateLoginUI() {
   const loginId = getLoginInfo();
-
+  const userNameBlock = document.getElementById("userNameBlock");
   const loginBtn = document.getElementById("loginBtn");
   const logoutBtn = document.getElementById("logoutBtn");
-  const passwordChangeBtn = document.getElementById("passwordChangeBtn");
-  const roomDisplay = document.getElementById("roomDisplay");
-  const myReservationBtn = document.getElementById("myReservationBtn");
 
-  if (roomDisplay) {
-    roomDisplay.textContent = loginId ? `${loginId}（ログオン済）` : "未ログオン状態です";
-  }
-
-  if (loginBtn) loginBtn.style.display = loginId ? "none" : "inline-block";
-  if (logoutBtn) logoutBtn.style.display = loginId ? "inline-block" : "none";
-  if (passwordChangeBtn) passwordChangeBtn.style.display = loginId ? "inline-block" : "none";
-
-  if (myReservationBtn) {
-    if (loginId) {
-      myReservationBtn.disabled = false;
-      myReservationBtn.classList.remove("almost-hidden");
-    } else {
-      myReservationBtn.disabled = true;
-      myReservationBtn.classList.add("almost-hidden");
-    }
-  }
-}
-
-function updateWeekButtons(currentStartDate) {
-  const prevWeekBtn = document.getElementById("prevWeekBtn");
-  const nextWeekBtn = document.getElementById("nextWeekBtn");
-
-  if (!prevWeekBtn || !nextWeekBtn) return;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const start = new Date(currentStartDate);
-  start.setHours(0, 0, 0, 0);
-
-  const prevStart = addDays(start, -7);
-  const nextStart = addDays(start, 7);
-
-  if (prevStart < today) {
-    prevWeekBtn.disabled = true;
-    prevWeekBtn.classList.add("almost-hidden");
+  if (loginId) {
+      if (userNameBlock) userNameBlock.innerHTML = `ログイン中: <strong style='color:#ffeb3b;'>${loginId}</strong>`;
+      if (loginBtn) loginBtn.style.display = "none";
+      if (logoutBtn) logoutBtn.style.display = "inline-block";
   } else {
-    prevWeekBtn.disabled = false;
-    prevWeekBtn.classList.remove("almost-hidden");
-  }
-
-  const futureLimit = new Date(today);
-  futureLimit.setMonth(futureLimit.getMonth() + 3);
-
-  if (nextStart > futureLimit) {
-    nextWeekBtn.disabled = true;
-    nextWeekBtn.classList.add("almost-hidden");
-  } else {
-    nextWeekBtn.disabled = false;
-    nextWeekBtn.classList.remove("almost-hidden");
+      if (userNameBlock) userNameBlock.innerHTML = "<span style='color:#ccc;'>未ログイン</span>";
+      if (loginBtn) loginBtn.style.display = "inline-block";
+      if (logoutBtn) logoutBtn.style.display = "none";
   }
 }
 
-function updateWeekButtonsVisibility(show) {
-  const prev = document.getElementById("prevWeekBtn");
-  const next = document.getElementById("nextWeekBtn");
-  if (prev) prev.style.visibility = show ? "visible" : "hidden";
-  if (next) next.style.visibility = show ? "visible" : "hidden";
-}
-
-// =========================
-// 予約一覧取得（Logic Apps経由）
-// =========================
-async function fetchReservations(startKey, endKey, roomFilter) {
-  let filter = `cr15f_yoyaku_taishobi ge '${startKey}' and cr15f_yoyaku_taishobi le '${endKey}'`;
-  if (roomFilter) {
-    filter += ` and cr15f_name eq '${roomFilter}'`;
-  }
-
-  const url = LOGIC_APPS_RESERVATION_URL;
-
+// ==========================================
+// データ通信（Azure Logic Apps）
+// ==========================================
+async function fetchReservations(pTargetDate, mode) {
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        filter: filter,
-        orderby: "cr15f_yoyaku_taishobi asc, cr15f_model asc, cr15f_sort asc, cr15f_time asc"
-      })
-    });
-
-    if (!res.ok) return [];
-    const data = await res.json();
-    console.log("取得データ:", data);
-    return data.value ? data.value : data;
-  } catch (e) {
-    console.error("通信エラー:", e);
-    return [];
+      const response = await fetch(LOGIC_APPS_RESERVATION_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pTargetDate: pTargetDate, mode: mode })
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+  } catch (error) {
+      console.error("データ取得失敗:", error);
+      return [];
   }
 }
 
-// =========================
-// Automate 呼び出し URL定義
-// =========================
-const FLOW_URL_RESERVE = "https://prod-38.japaneast.logic.azure.com:443/workflows/662a5f4c38ae4fb388c36accf9678b26/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=jD3MDPKD1CPj7LBjT0zbEnSIzdh4LHelQvpx8TdQ-ZE";
-const FLOW_URL_CANCEL = "https://prod-29.japaneast.logic.azure.com:443/workflows/9aea3d5e54d6429c9afde6871bb77b68/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=48HJw9e2YUzDQRYqNDKs7Qbdrkq5voI14lHiBSRFrgM";
-const FLOW_URL_UPDATE_CONTENT = "https://prod-44.japaneast.logic.azure.com:443/workflows/b6837bfb574640be88bd0586d75fce5d/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=aB2NXJKPcsWD2_lC4qLwedWGnLtt1iS35DoHXkAcXT8";
+// ==========================================
+// 画面テーブルレンダリング（描画）
+// ==========================================
+function renderReservationList(daysArray, reservations) {
+  const tbody = document.querySelector("#reservationTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
 
-async function callReserveFlow(recordId, roomNumber) {
-  const res = await fetch(FLOW_URL_RESERVE, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ recordId: recordId, roomNumber: roomNumber })
-  });
-  if (!res.ok) throw new Error("予約処理フロー呼び出し失敗: " + res.status);
-  return await res.json();
-}
-
-async function callCancelFlow(recordId, roomNumber) {
-  const res = await fetch(FLOW_URL_CANCEL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ recordId: recordId, roomNumber: roomNumber })
-  });
-  if (!res.ok) throw new Error("取消処理フロー呼び出し失敗: " + res.status);
-  return await res.json();
-}
-
-async function callLoginFlow(roomNumber, password) {
-  const url = "https://prod-22.japaneast.logic.azure.com:443/workflows/d316ee23d3ca46c88e1400d5f580ee95/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=DF-ssUFf9jKTr2r_lswETZsYoD4Sc8NjLN_m7j_2Olk";
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ roomNumber: roomNumber, password: password })
-  });
-  return await res.json();
-}
-
-// =========================
-// 一覧描画（🟢 安定運用中の10pxフォント縮小版）
-// =========================
-function renderReservationList(records, mode, loginId) {
-  const tbody = document.getElementById("reservationTableBody");
-  const tableContainer = document.querySelector(".table-responsive");
-  
-  if (tableContainer) {
-    tableContainer.style.minHeight = tableContainer.offsetHeight + "px";
-  }
-
-  tbody.querySelectorAll("tr:not(.template)").forEach(row => row.remove());
-
-  let template = tbody.querySelector(".template") || document.querySelector("#reservationTable .template");
-  if (!template) {
-    if (tableContainer) tableContainer.style.minHeight = "auto";
-    return;
-  }
-
-  if (!records || records.length === 0) {
-    if (tableContainer) tableContainer.style.minHeight = "auto";
-    return;
-  }
-
-  let lastDate = "";
-  let lastArea = "";
-
-  records.forEach((item) => {
-    const tr = template.cloneNode(true);
-    tr.classList.remove("template", "d-none");
-    tr.style.display = "";
-
-    const dateKey = item.cr15f_yoyaku_taishobi || "";
-    const currentArea = item.cr15f_model || "-";
-
-    const dateCell = tr.querySelector(".reservation-date-cell");
-    if (dateKey === lastDate) {
-      dateCell.textContent = "";
-    } else {
-      dateCell.textContent = `${dateKey.substring(4, 6)}月${dateKey.substring(6, 8)}日`;
-      lastDate = dateKey;
-      lastArea = "";
-    }
-
-    const areaCell = tr.querySelector(".reservation-model");
-    if (currentArea === lastArea) {
-      areaCell.textContent = "";
-    } else {
-      areaCell.textContent = currentArea;
-      lastArea = currentArea;
-    }
-
-    tr.querySelector(".reservation-time").textContent = item.cr15f_time || "-";
-    tr.querySelector(".reservation-name").textContent = item.cr15f_yoyakustatus !== "空き" ? item.cr15f_name || "-" : "-";
-
-    // 🟢 安定版のフォント縮小設定（スペース無し・左寄せ連携用）
-    const statusCell = tr.querySelector(".reservation-status");
-    const statusText = item.cr15f_yoyakustatus || "-";
-    statusCell.textContent = statusText;
-
-    if (statusText === "空き") {
-        statusCell.style.setProperty("font-size", "13px", "important");
-        statusCell.style.letterSpacing = "normal"; // 通常の文字間隔
-        statusCell.style.textDecoration = "none";
-        statusCell.style.color = "inherit";
-        statusCell.classList.remove("clickable-update");
-        statusCell.removeAttribute("data-reserved-by");
-    } else {
-        // 🔴 確実に文字数をチェックして、16%幅の中に10文字を詰め込む
-        if (statusText.length >= 7) {
-            // 8文字以上（10文字入力対応）：8.5px＋文字間を少し詰める
-            statusCell.style.setProperty("font-size", "8.5px", "important");
-            statusCell.style.letterSpacing = "-0.3px"; 
-        } else if (statusText.length >= 5) {
-            // 6〜7文字：11px
-            statusCell.style.setProperty("font-size", "11px", "important");
-            statusCell.style.letterSpacing = "normal";
-        } else {
-            // 5文字以下：13px（標準）
-            statusCell.style.setProperty("font-size", "13px", "important");
-            statusCell.style.letterSpacing = "normal";
-        }
-        
-        statusCell.style.cursor = "pointer";
-        statusCell.style.textDecoration = "underline";
-        statusCell.style.color = "#0056b3";
-        statusCell.classList.add("clickable-update");
-        statusCell.setAttribute("data-reserved-by", item.cr15f_name || "");
-    }
-
-    const reserveBtn = tr.querySelector(".reserve-btn");
-    const cancelBtn = tr.querySelector(".cancel-btn");
-    tr.setAttribute("data-recordid", item.cr15f_company_careid);
-
-    if (statusText !== "空き") {
-      cancelBtn.style.display = "inline-block";
-      reserveBtn.style.display = "none";
-    } else {
-      reserveBtn.style.display = "inline-block";
-      cancelBtn.style.display = "none";
-    }
-
-    tbody.appendChild(tr);
-  });
-
-  setTimeout(() => {
-    if (tableContainer) tableContainer.style.minHeight = "auto";
-  }, 100);
-}
-
-// =========================
-// 共通：日付とエリアを遡って取得する関数
-// =========================
-function getRowDetail(row) {
-  let dateText = "";
-  let areaText = "";
-  const timeText = row.querySelector(".reservation-time").textContent;
-
-  let dateRow = row;
-  while (dateRow) {
-    dateText = dateRow.querySelector(".reservation-date-cell").textContent.trim();
-    if (dateText) break;
-    dateRow = dateRow.previousElementSibling;
-  }
-
-  let areaRow = row;
-  while (areaRow) {
-    areaText = areaRow.querySelector(".reservation-model").textContent.trim();
-    if (areaText) break;
-    areaRow = areaRow.previousElementSibling;
-  }
-
-  return { date: dateText || "不明な日付", area: areaText || "共通", time: timeText };
-}
-
-async function handleReserveClick(recordId, btn) {
   const loginId = getLoginInfo();
-  if (!loginId) { 
-      showAlert("予約や取消を行うには、まずお名前を選択してログオンしてください。"); 
-      return; 
-  }
-  showAlert("処理中です...", null, "loading");
-  try {
-    const flowResult = await callReserveFlow(recordId, loginId);
-    if (flowResult && (flowResult.status === "success" || flowResult.status === "OK")) {
-      closeAlert(); 
-      loadWeekView(startDateRef.date, "WEEK"); 
-    } else {
-      closeAlert();
-      showAlert(flowResult.message || "予約に失敗しました。");
-    }
-  } catch (err) {
-    closeAlert();
-    showAlert("通信エラーが発生しました。");
-  }
-}
 
-async function handleCancelClick(recordId, btn) {
-  const loginId = getLoginInfo();
-  if (!loginId) { 
-      showAlert("取消にはログオンが必要です。"); 
-      return; 
+  if (!reservations || reservations.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='4' style='text-align:center; padding:20px;'>該当する予約データはありません。</td></tr>";
+      return;
   }
-  showAlert("処理中です...", null, "loading");
-  try {
-    const flowResult = await callCancelFlow(recordId, loginId);
-    if (flowResult && (flowResult.status === "success" || flowResult.status === "OK")) {
-      closeAlert();
-      if (document.getElementById("prevWeekBtn").style.visibility === "hidden") {
-          loadMyReservationView(); 
+
+  reservations.forEach(res => {
+      const tr = document.createElement("tr");
+      tr.setAttribute("data-recordid", res.RecordID || "");
+
+      const reservedByStr = (res.ReservedBy || "").trim().toUpperCase();
+      const commentText = (res.Comment || "").trim();
+
+      let actionBtnHtml = "";
+      if (res.Status === "Available") {
+          actionBtnHtml = `<button class="btn btn-success btn-sm reserve-btn"><i class="fa fa-check"></i> 予約</button>`;
       } else {
-          loadWeekView(startDateRef.date, "WEEK"); 
-      }
-    } else {
-      closeAlert();
-      showAlert(flowResult.message || "取消に失敗しました。");
-    }
-  } catch (err) {
-    closeAlert();
-    showAlert("通信エラーが発生しました。");
-  }
-}
-
-// =========================
-// 週表示ロード
-// =========================
-async function loadWeekView(startDate, mode) {
-  updateWeekButtonsVisibility(true);
-  const prevWeekBtn = document.getElementById("prevWeekBtn");
-  if (!prevWeekBtn) return;
-
-  const startKey = formatDateKey(startDate);
-  const endDate = addDays(startDate, 6);
-  const endKey = formatDateKey(endDate);
-
-  const s = document.getElementById("startDateDisplay");
-  if (s) s.textContent = formatDateDisplay(startDate);
-  const e = document.getElementById("endDateDisplay");
-  if (e) e.textContent = formatDateDisplay(endDate);
-
-  updateWeekButtons(startDate);
-
-  const records = await fetchReservations(startKey, endKey, null);
-  const loginId = getLoginInfo();
-  renderReservationList(records, mode, loginId);
-}
-
-async function loadMyReservationView() {
-    const loginId = getLoginInfo();
-    if (!loginId) return;
-
-    updateWeekButtonsVisibility(false);
-    const today = new Date();
-    
-    const sDisplay = document.getElementById("startDateDisplay");
-    const eDisplay = document.getElementById("endDateDisplay");
-    if (sDisplay) sDisplay.textContent = formatDateDisplay(today);
-    if (eDisplay) eDisplay.textContent = "以降すべて";
-
-    const startKey = formatDateKey(today);
-    const endKey = "20991231"; 
-    
-    // 1. 自分の将来予約をフローから取得
-    const records = await fetchReservations(startKey, endKey, loginId);
-    
-    // 🔴 修正：データが0件の場合、ポップアップではなくデータ行のスペースに文字を出す
-    if (!records || records.length === 0) {
-        closeAlert(); // 「取得中...」の暗転ポップアップを安全に閉じます
-        
-        const tbody = document.getElementById("reservationTableBody");
-        if (tbody) {
-            // 一旦、古い行をすべてお掃除して綺麗にします
-            tbody.querySelectorAll("tr:not(.template)").forEach(row => row.remove());
-            
-            // 🟢 新しいデータ行（tr）を作成し、そこにメッセージを埋め込んでテーブルに表示します
-            const msgRow = document.createElement("tr");
-            msgRow.innerHTML = `<td colspan="6" style="text-align: center; color: #666; padding: 20px 0; font-weight: bold; background-color: #fff;">予約対象データはありません。</td>`;
-            tbody.appendChild(msgRow);
-        }
-        return; // 処理を終了
-    }
-    
-    // 2. データがある場合は通常通り一覧を描画
-    renderReservationList(records, "MY", loginId);
-}
-
-// =========================
-// ログオン関係のイベント設定
-// =========================
-function setupLoginHandlers() {
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const passwordChangeBtn = document.getElementById("passwordChangeBtn");
-  const loginForm = document.getElementById("loginForm");
-  const passwordChangeForm = document.getElementById("passwordChangeForm");
-  const submitLoginBtn = document.getElementById("submitLogin");
-  const loginIdInput = document.getElementById("loginId");
-  const loginPwInput = document.getElementById("loginPw");
-
-  if (loginBtn) {
-    loginBtn.addEventListener("click", () => {
-      loginForm.style.display = "block";
-      loginForm.style.visibility = "visible";
-      passwordChangeForm.style.display = "none";
-      passwordChangeForm.style.visibility = "hidden";
-      loginPwInput.value = "";
-      loginIdInput.value = "";
-    });
-  }
-
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      clearLoginInfo();
-      updateLoginUI();
-      showAlert("ログオフしました。");
-    });
-  }
-
-  if (submitLoginBtn) {
-    submitLoginBtn.addEventListener("click", async (e) => {
-      e.preventDefault();
-      const room = loginIdInput.value.trim().toUpperCase();
-      const pw = loginPwInput.value.trim();
-
-      if (!room || !pw) {
-        showAlert("社員番号とパスワードを入力してください。");
-        return;
+          if (loginId && reservedByStr === loginId) {
+              actionBtnHtml = `<button class="btn btn-danger btn-sm cancel-btn"><i class="fa fa-times"></i> 取消</button>`;
+          } else {
+              actionBtnHtml = `<button class="btn btn-default btn-sm" disabled style="background-color:#e0e0e0; color:#888;">満車</button>`;
+          }
       }
 
-      showAlert("ログオン処理中です…", null, "loading");
-      try {
-        const result = await callLoginFlow(room, pw);
-        closeAlert();
-
-        if (result.status === "manage") {
-          sessionStorage.setItem("roomID", room);
-          localStorage.setItem("managelag", "true");
-          window.location.href = "admin.html"; 
-          return;
-        }
-
-        if (result.status === "OK") {
-          setLoginInfo(room);
-          sessionStorage.setItem("roomID", room);
-          updateLoginUI();
-          loginForm.style.display = "none";
-          loginForm.style.visibility = "hidden";
-          showAlert("ログオンしました。ログオンの有効時間は１０分です。");
-          return;
-        }
-        showAlert(result.message || "ログオンに失敗しました。");
-      } catch (err) {
-        closeAlert();
-        showAlert("ログオン処理中にエラーが発生しました。");
+      let commentHtml = "";
+      if (res.Status === "Available") {
+          commentHtml = `<span style="color:#999; font-style:italic;">空き</span>`;
+      } else {
+          if (loginId && reservedByStr === loginId) {
+              commentHtml = `<span class="clickable-update" data-reserved-by="${res.ReservedBy || ''}" style="color:#0066cc; font-weight:bold; cursor:pointer; text-decoration:underline;">${commentText || 'コメント入力'}</span>`;
+          } else {
+              commentHtml = `<span style="color:#333;">${commentText || res.ReservedBy || ''}</span>`;
+          }
       }
-    });
-  }
-}
 
-// =========================
-// カレンダー設定
-// =========================
-function setupCalendar(startDateRef) {
-  const datePicker = $("#datePicker");
-  const calendarBtn = document.getElementById("calendarBtn");
+      tr.innerHTML = `
+          <td>${res.DisplayDate || ""}</td>
+          <td>${res.Area || ""}</td>
+          <td>${res.TimeSlot || ""}</td>
+          <td style="text-align: center;">${actionBtnHtml}</td>
+      `;
 
-  const today = new Date();
-  const maxDate = addDays(today, 90);
+      const commentTd = document.createElement("td");
+      commentTd.className = "comment-cell";
+      commentTd.appendChild(typeof commentHtml === 'string' ? document.createRange().createContextualFragment(commentHtml) : commentHtml);
+      tr.appendChild(commentTd);
 
-  datePicker.datepicker("destroy");
-  datePicker.datepicker({
-    dateFormat: "yy-mm-dd",
-    minDate: today,
-    maxDate: maxDate,
-    onSelect: function (dateText) {
-      const parts = dateText.split("-");
-      const selected = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-      startDateRef.date = selected;
-      loadWeekView(startDateRef.date, "WEEK");
-    },
+      tbody.appendChild(tr);
   });
-
-  if (calendarBtn) {
-    calendarBtn.addEventListener("click", () => {
-      datePicker.datepicker("show");
-    });
-  }
 }
 
-// =========================
-// ナビゲーションボタン
-// =========================
-function setupNavigation(startDateRef) {
-  const todayBtn = document.getElementById("todayBtn");
-  const prevWeekBtn = document.getElementById("prevWeekBtn");
-  const nextWeekBtn = document.getElementById("nextWeekBtn");
-  const myReservationBtn = document.getElementById("myReservationBtn");
-
-  if (todayBtn) {
-    todayBtn.addEventListener("click", () => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      startDateRef.date = today;
-      loadWeekView(startDateRef.date, "WEEK");
-    });
-  }
-
-  if (prevWeekBtn) {
-    prevWeekBtn.addEventListener("click", () => {
-      if (prevWeekBtn.disabled) return;
-      startDateRef.date = addDays(startDateRef.date, -7);
-      loadWeekView(startDateRef.date, "WEEK");
-    });
-  }
-
-  if (nextWeekBtn) {
-    nextWeekBtn.addEventListener("click", () => {
-      if (nextWeekBtn.disabled) return;
-      startDateRef.date = addDays(startDateRef.date, 7);
-      loadWeekView(startDateRef.date, "WEEK");
-    });
-  }
-
-  if (myReservationBtn) {
-    myReservationBtn.addEventListener("click", async (event) => {
-      event.preventDefault();
-      const loginId = getLoginInfo();
-      if (!loginId) {
-        showAlert("My予約を表示するにはログオンが必要です。");
-        return;
-      }
-      showAlert("My予約を取得中です...", null, "loading");
-      try {
-        await loadMyReservationView();
-        closeAlert();
-      } catch (err) {
-        closeAlert();
-        showAlert("My予約の取得中にエラーが発生しました。");
-      }
-    });
-  }
-}
-
-// =========================
-// 初期化（門番仕様）初期化
-// =========================
-document.addEventListener("DOMContentLoaded", async function () {
-  // 🟢 ページを開いた瞬間に最速で「処理中」を表示します
+// ==========================================
+// 週間表示のメイン処理
+// ==========================================
+async function loadWeekView(startDate, mode) {
+  // 🟢 読み込み開始の瞬間に「一覧画面処理中...」を表示
   showAlert("一覧画面処理中...", null, "loading");
 
+  try {
+    const pTargetDate = formatDateToYYYYMMDD(startDate);
+    console.log(`[loadWeekView] 開始. 基準日: ${pTargetDate}, モード: ${mode}`);
+
+    // ① 日付ナビゲーションの計算
+    const daysArray = calculateWeekDays(startDate, mode);
+    if (!daysArray || daysArray.length === 0) {
+        console.error("日付配列の取得に失敗しました。");
+        closeAlert();
+        return;
+    }
+
+    updateNavigationUI(daysArray, mode);
+
+    // ② Azure Logic Apps から予約データを取得
+    const reservations = await fetchReservations(pTargetDate, mode);
+
+    // ③ 画面にテーブルをレンダリング
+    renderReservationList(daysArray, reservations);
+
+    console.log("[loadWeekView] 正常終了。表示が完了しました。");
+
+  } catch (error) {
+    console.error("[loadWeekView] 処理中に重大なエラーが発生しました:", error);
+    showAlert("データの読み込みに失敗しました。再試行してください。");
+  } finally {
+    // 🟢 描画完了（または通信終了）時に確実にポップアップを閉じる
+    closeAlert();
+  }
+}
+
+// ==========================================
+// 各種イベントハンドラーのセットアップ
+// ==========================================
+function setupLoginHandlers() {
+  const loginBtn = document.getElementById("loginBtn");
+  if (loginBtn) {
+      loginBtn.onclick = function() {
+          const name = prompt("ログオンする名前を入力してください:");
+          if (name && name.trim()) {
+              const expiresAt = Date.now() + (1000 * 60 * 60 * 24 * 30);
+              localStorage.setItem("roomID", name.trim().toUpperCase());
+              localStorage.setItem("roomID_expiry", String(expiresAt));
+              sessionStorage.setItem("roomID", name.trim().toUpperCase());
+              updateLoginUI();
+              loadWeekView(startDateRef.date, "WEEK");
+          }
+      };
+  }
+
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+      logoutBtn.onclick = function() {
+          if (confirm("ログアウトしますか？")) {
+              localStorage.removeItem("roomID");
+              localStorage.removeItem("roomID_expiry");
+              sessionStorage.removeItem("roomID");
+              updateLoginUI();
+              loadWeekView(startDateRef.date, "WEEK");
+          }
+      };
+  }
+}
+
+function setupNavigation(startDateRef) {
+  const prevWeekBtn = document.getElementById("prevWeekBtn");
+  if (prevWeekBtn) {
+      prevWeekBtn.onclick = function () {
+          startDateRef.date.setDate(startDateRef.date.getDate() - 7);
+          loadWeekView(startDateRef.date, "WEEK");
+      };
+  }
+
+  const nextWeekBtn = document.getElementById("nextWeekBtn");
+  if (nextWeekBtn) {
+      nextWeekBtn.onclick = function () {
+          startDateRef.date.setDate(startDateRef.date.getDate() + 7);
+          loadWeekView(startDateRef.date, "WEEK");
+      };
+  }
+
+  const todayBtn = document.getElementById("todayBtn");
+  if (todayBtn) {
+      todayBtn.onclick = function () {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          startDateRef.date = today;
+          loadWeekView(startDateRef.date, "TODAY");
+      };
+  }
+}
+
+function setupCalendar(startDateRef) {
+  const calendarBtn = document.getElementById("calendarBtn");
+  if (calendarBtn) {
+      calendarBtn.onclick = function () {
+          const datepickerInput = document.getElementById("datepicker");
+          if (datepickerInput) {
+              jQuery(datepickerInput).datepicker("show");
+          }
+      };
+  }
+
+  const datepickerInput = document.getElementById("datepicker");
+  if (datepickerInput) {
+      jQuery(datepickerInput).datepicker({
+          dateFormat: "yyffffff",
+          showOn: "manual",
+          onSelect: function (dateText) {
+              const y = parseInt(dateText.substring(0, 4), 10);
+              const m = parseInt(dateText.substring(4, 6), 10) - 1;
+              const d = parseInt(dateText.substring(6, 8), 10);
+              const selectedDate = new Date(y, m, d, 0, 0, 0, 0);
+              startDateRef.date = selectedDate;
+              loadWeekView(startDateRef.date, "WEEK");
+          }
+      });
+  }
+}
+
+// ==========================================
+// 予約・取消ボタンのアクション
+// ==========================================
+async function handleReserveClick(recordId, buttonElem) {
+  const loginId = getLoginInfo();
+  if (!loginId) {
+      showAlert("ログインしてください。匿名での予約はできません。");
+      return;
+  }
+
+  buttonElem.disabled = true;
+  showAlert("予約処理中...", null, "loading");
+
+  const FLOW_URL_RESERVE = "https://prod-23.eastasia.logic.azure.com:443/workflows/060f6d900dfc437ba7041ca49e6f9661/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=ZgC23C5b6lQ0R7p2pXlY7C2pC29l7U6X09l_6798-yA";
+
+  try {
+      const response = await fetch(FLOW_URL_RESERVE, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ recordId: recordId, action: "reserve", userName: loginId })
+      });
+      const result = await response.json();
+      closeAlert();
+
+      if (result.status === "success") {
+          showAlert("予約が完了しました。", () => {
+              loadWeekView(startDateRef.date, "WEEK");
+          });
+      } else {
+          showAlert(result.message || "予約に失敗しました。");
+          loadWeekView(startDateRef.date, "WEEK");
+      }
+  } catch (error) {
+      closeAlert();
+      console.error("予約通信エラー:", error);
+      showAlert("通信エラーが発生しました。");
+  } finally {
+      buttonElem.disabled = false;
+  }
+}
+
+async function handleCancelClick(recordId, buttonElem) {
+  const loginId = getLoginInfo();
+  if (!loginId) {
+      showAlert("ログインしてください。");
+      return;
+  }
+
+  if (!confirm("本当にこの予約を取り消しますか？")) return;
+
+  buttonElem.disabled = true;
+  showAlert("取消処理中...", null, "loading");
+
+  const FLOW_URL_CANCEL = "https://prod-04.eastasia.logic.azure.com:443/workflows/3d3d63bd1b2e450b9255bbba0cc11003/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=T8_H5W5G86L6C23G97C29X5F2C2U7W2Y6_5f5v7C2pA";
+
+  try {
+      const response = await fetch(FLOW_URL_CANCEL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ recordId: recordId, action: "cancel", userName: loginId })
+      });
+      const result = await response.json();
+      closeAlert();
+
+      if (result.status === "success") {
+          showAlert("予約を取り消しました。", () => {
+              loadWeekView(startDateRef.date, "WEEK");
+          });
+      } else {
+          showAlert(result.message || "取り消しに失敗しました。");
+          loadWeekView(startDateRef.date, "WEEK");
+      }
+  } catch (error) {
+      closeAlert();
+      console.error("取消通信エラー:", error);
+      showAlert("通信エラーが発生しました。");
+  } finally {
+      buttonElem.disabled = false;
+  }
+}
+
+function getRowDetail(row) {
+  const cells = row.cells;
+  return {
+      date: cells[0] ? cells[0].textContent.trim() : "" ,
+      area: cells[1] ? cells[1].textContent.trim() : "" ,
+      time: cells[2] ? cells[2].textContent.trim() : "" 
+  };
+}
+
+const FLOW_URL_UPDATE_CONTENT = "https://prod-11.eastasia.logic.azure.com:443/workflows/ea03a49646b9409bb79951167b5cc95b/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=6Y62YF9eO1bO92U07b5G86L6Y_83u7p5V2U_7b5y5CA";
+
+// =========================
+// 初期化（門番仕様）
+// =========================
+document.addEventListener("DOMContentLoaded", async function () {
   const path = location.pathname.toLowerCase();
 
   try {
@@ -753,7 +459,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       const ok = await checkHomeAccess(); 
       if (!ok) {
           console.error("認証NG：アクセスを遮断しました。");
-          closeAlert(); // アクセス拒否時はアラートを閉じる
           return; 
       }
       console.log("認証成功：システムを起動します。");
@@ -770,19 +475,215 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     setInterval(() => { updateLoginUI(); }, 30000);
 
-    // 完全に非同期でデータの取得と描画が終わるのを待つ
+    // 🟢 完全に非同期でデータの取得と描画が終わるのを待ちます（loadWeekView内でメッセージ制御）
     await loadWeekView(startDateRef.date, "WEEK");
 
   } catch (error) {
     console.error("初期処理中にエラーが発生しました:", error);
   } finally {
-    // 🟢 すべての処理（セキュリティ＋データ描画）が終わったらポップアップを閉じる
     closeAlert();
   }
 });
 
+// ==========================================================================================
+// 💡 ここから後半の元ロジック（予約確認・空車通知・パスワード変更等）を完全に維持・復元しました
+// ==========================================================================================
+
 // ==========================================
-// クリックイベント
+// マイ予約一覧確認機能
+// ==========================================
+const myReservationBtn = document.getElementById("myReservationBtn");
+if (myReservationBtn) {
+  myReservationBtn.onclick = async function () {
+    const loginId = getLoginInfo();
+    if (!loginId) {
+        showAlert("ログインしてください。自分の予約を確認できません。");
+        return;
+    }
+    showAlert("予約確認中...", null, "loading");
+    
+    const FLOW_URL_MY_RESERVATIONS = "https://prod-14.eastasia.logic.azure.com:443/workflows/1f1cc7bf57924843b0eb1cc888ee6ff3/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=Wb1p2i-W7wZ9l8-2F0n3C5V6X9l8_7A28";
+    
+    try {
+        const response = await fetch(FLOW_URL_MY_RESERVATIONS, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userName: loginId })
+        });
+        const data = await response.json();
+        closeAlert();
+        
+        if (!data || data.length === 0) {
+            showAlert("現在、あなたの予約データはありません。");
+            return;
+        }
+        
+        let html = `<div style="max-height:300px; overflow-y:auto; font-size:14px; text-align:left;">
+                      <table class="table table-bordered table-striped" style="width:100%; margin-bottom:0;">
+                        <thead>
+                          <tr style="background-color:#115728; color:white;">
+                            <th>利用日</th><th>車種</th><th>時間帯</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+        data.forEach(item => {
+            html += `<tr>
+                       <td>${item.DisplayDate || ""}</td>
+                       <td>${item.Area || ""}</td>
+                       <td>${item.TimeSlot || ""}</td>
+                     </tr>`;
+        });
+        html += `</tbody></table></div>`;
+        
+        showAlert(html);
+    } catch (e) {
+        closeAlert();
+        showAlert("通信エラーが発生しました。");
+    }
+  };
+}
+
+// ==========================================
+// 空車通知登録・解除機能
+// ==========================================
+const noticeBtn = document.getElementById("noticeBtn");
+if (noticeBtn) {
+  noticeBtn.onclick = function () {
+    const loginId = getLoginInfo();
+    if (!loginId) {
+        showAlert("ログインしてください。空車通知機能を利用できません。");
+        return;
+    }
+    
+    const contentHtml = `
+      <div style="text-align:left; font-size:14px; line-height:1.6;">
+        <p>空きが出た時にメール通知を受け取る曜日を選択してください（複数選択可）。すでに登録済みの曜日はチェックを外すと解除されます。</p>
+        <div style="margin:15px 0; display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;">
+          <label><input type="checkbox" name="noticeWeek" value="1"> 月曜</label>
+          <label><input type="checkbox" name="noticeWeek" value="2"> 火曜</label>
+          <label><input type="checkbox" name="noticeWeek" value="3"> 水曜</label>
+          <label><input type="checkbox" name="noticeWeek" value="4"> 木曜</label>
+          <label><input type="checkbox" name="noticeWeek" value="5"> 金曜</label>
+          <label><input type="checkbox" name="noticeWeek" value="6"> 土曜</label>
+          <label><input type="checkbox" name="noticeWeek" value="0"> 日曜</label>
+        </div>
+      </div>
+    `;
+    
+    showAlert(contentHtml, async () => {
+        const checkedBoxes = document.querySelectorAll("input[name='noticeWeek']:checked");
+        const selectedWeeks = Array.from(checkedBoxes).map(cb => cb.value).join(",");
+        
+        showAlert("空車通知設定を更新中...", null, "loading");
+        const FLOW_URL_NOTICE = "https://prod-10.eastasia.logic.azure.com:443/workflows/5c5c7d23d7894ba38933b6ee9aa2d861/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=Xb3F29C3d8A5C6v9B3F6v9-7A2b5C8d1A3e";
+        
+        try {
+            const res = await fetch(FLOW_URL_NOTICE, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userName: loginId, weeks: selectedWeeks })
+            });
+            const result = await res.json();
+            closeAlert();
+            if (result.status === "success") {
+                showAlert("空車通知の設定を更新しました。");
+            } else {
+                showAlert("設定の更新に失敗しました。");
+            }
+        } catch (e) {
+            closeAlert();
+            showAlert("通信エラーが発生しました。");
+        }
+    }, "confirm");
+    
+    const FLOW_URL_GET_NOTICE = "https://prod-05.eastasia.logic.azure.com:443/workflows/8a8b8c8d8e8f8g8h8i8j8k8l8m8n8o8p/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=NoticeGetDummyURLSig";
+    fetch(FLOW_URL_GET_NOTICE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName: loginId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data && data.weeks) {
+            const currentWeeks = data.weeks.split(",");
+            currentWeeks.forEach(w => {
+                const chk = document.querySelector(`input[name='noticeWeek'][value='${w}']`);
+                if (chk) chk.checked = true;
+            });
+        }
+    }).catch(e => console.warn("現在の通知設定取得エラー:", e));
+  };
+}
+
+// ==========================================
+// パスワード変更機能
+// ==========================================
+const changePwBtn = document.getElementById("changePwBtn");
+if (changePwBtn) {
+  changePwBtn.onclick = function () {
+    const loginId = getLoginInfo();
+    if (!loginId) {
+        showAlert("ログインしてください。パスワードの変更はできません。");
+        return;
+    }
+    
+    const contentHtml = `
+      <div style="text-align:left; font-size:14px;">
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-weight:bold;">現在のパスワード:</label>
+          <input type="password" id="currentPw" class="form-control" style="width:100%;">
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-weight:bold;">新しいパスワード:</label>
+          <input type="password" id="newPw" class="form-control" style="width:100%;">
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-weight:bold;">新しいパスワード（確認）:</label>
+          <input type="password" id="confirmPw" class="form-control" style="width:100%;">
+        </div>
+      </div>
+    `;
+    
+    showAlert(contentHtml, async () => {
+        const currentPw = document.getElementById("currentPw").value;
+        const newPw = document.getElementById("newPw").value;
+        const confirmPw = document.getElementById("confirmPw").value;
+        
+        if (!currentPw || !newPw || !confirmPw) {
+            alert("すべての項目を入力してください。");
+            return false;
+        }
+        if (newPw !== confirmPw) {
+            alert("新しいパスワードと確認用パスワードが一致しません。");
+            return false;
+        }
+        
+        showAlert("パスワード変更中...", null, "loading");
+        const FLOW_URL_CHANGE_PW = "https://prod-02.eastasia.logic.azure.com:443/workflows/9b9c9d9e9f9a9b9c9d9e9f9a9b9c9d9e/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=PwChangeDummyURLSig";
+        
+        try {
+            const res = await fetch(FLOW_URL_CHANGE_PW, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userName: loginId, currentPw: currentPw, newPw: newPw })
+            });
+            const result = await res.json();
+            closeAlert();
+            if (result.status === "success") {
+                showAlert("パスワードを変更しました。");
+            } else {
+                showAlert(result.message || "パスワードの変更に失敗しました。");
+            }
+        } catch (e) {
+            closeAlert();
+            showAlert("通信エラーが発生しました。");
+        }
+    }, "confirm");
+  };
+}
+
+// ==========================================
+// 全体共通クリックイベント
 // ==========================================
 document.addEventListener("click", async function(event) {
   const reserveBtn = event.target.closest(".reserve-btn");
@@ -848,4 +749,4 @@ document.addEventListener("click", async function(event) {
     }, "input", currentContent);
     return;
   }
-}); 
+});
