@@ -737,9 +737,8 @@ function setupNavigation(startDateRef) {
     });
   }
 }
-
 // =========================
-// 初期化（門番仕様）
+// 初期化（門番仕様）初期化
 // =========================
 document.addEventListener("DOMContentLoaded", async function () {
   const path = location.pathname.toLowerCase();
@@ -764,7 +763,19 @@ document.addEventListener("DOMContentLoaded", async function () {
   setupCalendar(startDateRef);
 
   setInterval(() => { updateLoginUI(); }, 30000);
-  loadWeekView(startDateRef.date, "WEEK");
+
+  // 🟢 読み込み開始前に「一覧画面処理中...」のローディングを表示
+  showAlert("一覧画面処理中...", null, "loading");
+
+  try {
+    // 完全に非同期でデータの取得と描画が終わるのを待つため、await を付与します
+    await loadWeekView(startDateRef.date, "WEEK");
+  } catch (error) {
+    console.error("初期一覧の読み込みに失敗しました:", error);
+  } finally {
+    // 🟢 読み込みが完了（またはエラー終了）したらポップアップを閉じる
+    closeAlert();
+  }
 });
 
 // ==========================================
