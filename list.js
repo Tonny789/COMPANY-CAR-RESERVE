@@ -518,28 +518,44 @@ async function handleCancelClick(recordId, btn) {
   }
 }
 
-// =========================
-// 週表示ロード
-// =========================
+// ==========================================
+// 週間表示のメイン処理
+// ==========================================
 async function loadWeekView(startDate, mode) {
-  updateWeekButtonsVisibility(true);
-  const prevWeekBtn = document.getElementById("prevWeekBtn");
-  if (!prevWeekBtn) return;
+  // 🟢 引数名は元のコードに合わせて「startDate」にしています
+  // 画面切り替え（初期・クリックすべて）が始まった瞬間に「処理中」を表示
+  showAlert("一覧画面処理中...", null, "loading");
 
-  const startKey = formatDateKey(startDate);
-  const endDate = addDays(startDate, 6);
-  const endKey = formatDateKey(endDate);
+  try {
+    const pTargetDate = formatDateToYYYYMMDD(startDate);
+    console.log(`[loadWeekView] 開始. 基準日: ${pTargetDate}, モード: ${mode}`);
 
-  const s = document.getElementById("startDateDisplay");
-  if (s) s.textContent = formatDateDisplay(startDate);
-  const e = document.getElementById("endDateDisplay");
-  if (e) e.textContent = formatDateDisplay(endDate);
+    // ① 日付ナビゲーションの計算（1週間分の日付配列を取得）
+    const daysArray = calculateWeekDays(startDate, mode);
+    if (!daysArray || daysArray.length === 0) {
+        console.error("日付配列の取得に失敗しました。");
+        closeAlert();
+        return;
+    }
 
-  updateWeekButtons(startDate);
+    // カレンダーUI等の表示を更新
+    updateNavigationUI(daysArray, mode);
 
-  const records = await fetchReservations(startKey, endKey, null);
-  const loginId = getLoginInfo();
-  renderReservationList(records, mode, loginId);
+    // ② Azure Logic Apps から予約データを取得（非同期通信）
+    const reservations = await fetchReservations(pTargetDate, mode);
+
+    // ③ 画面にテーブルをレンダリング（描画）
+    renderReservationList(daysArray, reservations);
+
+    console.log("[loadWeekView] 正常終了。表示が完了しました。");
+
+  } catch (error) {
+    console.error("[loadWeekView] 処理中に重大なエラーが発生しました:", error);
+    showAlert("データの読み込みに失敗しました。再試行してください。");
+  } finally {
+    // 🟢 描画までがすべて完了、またはエラーで終了した場合に確実にローディングを閉じる
+    closeAlert();
+  }
 }
 
 async function loadMyReservationView() {
@@ -739,44 +755,40 @@ function setupNavigation(startDateRef) {
 }
 
 // =========================
-// 初期化（門番仕様）初期化
+// 初期化（門番仕様）
 // =========================
 document.addEventListener("DOMContentLoaded", async function () {
-  // 🟢 ページを開いた瞬間に最速で「処理中」を表示します
-  showAlert("一覧画面処理中...", null, "loading");
-
   const path = location.pathname.toLowerCase();
 
-  try {
-    if (path === "/" || path.includes("index") || path.includes("home")) {
-      console.log("セキュリティチェックを開始します...");
-      const ok = await checkHomeAccess(); 
-      if (!ok) {
-          console.error("認証NG：アクセスを遮断しました。");
-          closeAlert(); // アクセス拒否時はアラートを閉じる
-          return; 
-      }
-      console.log("認証成功：システムを起動します。");
+  if (path === "/" || path.includes("index") || path.includes("home")) {
+    console.log("セキュリティチェックを開始します...");
+    const ok = await checkHomeAccess(); 
+    if (!ok) {
+        console.error("認証NG：アクセスを遮断しました。");
+        return; 
     }
+    console.log("認証成功：システムを起動します。");
+  }
 
-    updateLoginUI();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    startDateRef.date = today;
+  updateLoginUI();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  startDateRef.date = today;
 
-    setupLoginHandlers();
-    setupNavigation(startDateRef);
-    setupCalendar(startDateRef);
+  setupLoginHandlers();
+  setupNavigation(startDateRef);
+  setupCalendar(startDateRef);
 
-    setInterval(() => { updateLoginUI(); }, 30000);
+  setInterval(() => { updateLoginUI(); }, 30000);
 
-    // 完全に非同期でデータの取得と描画が終わるのを待つ
+  try {
+    // 完全に非同期でデータの取得と描画が終わるのを待ちます
+    // ※ loadWeekView の内部で自動的に「一覧画面処理中...」が表示されます
     await loadWeekView(startDateRef.date, "WEEK");
-
   } catch (error) {
     console.error("初期処理中にエラーが発生しました:", error);
   } finally {
-    // 🟢 すべての処理（セキュリティ＋データ描画）が終わったらポップアップを閉じる
+    // すべての処理が終わったら確実にポップアップを閉じる（安全策）
     closeAlert();
   }
 });
