@@ -608,7 +608,7 @@ if (noticeBtn) {
         if (data && data.weeks) {
             const currentWeeks = data.weeks.split(",");
             currentWeeks.forEach(w => {
-                const chk = document.querySelector(`input[name='noticeWeek'][value='${w}']`);
+                const chk = document.querySelector('input[name="noticeWeek"][value="' + w + '"]');
                 if (chk) chk.checked = true;
             });
         }
