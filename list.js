@@ -522,6 +522,7 @@ async function handleCancelClick(recordId, btn) {
 // 週表示ロード
 // =========================
 async function loadWeekView(startDate, mode) {
+  showAlert("一覧画面処理中...", null, "loading");
   updateWeekButtonsVisibility(true);
   const prevWeekBtn = document.getElementById("prevWeekBtn");
   if (!prevWeekBtn) return;
@@ -540,9 +541,11 @@ async function loadWeekView(startDate, mode) {
   const records = await fetchReservations(startKey, endKey, null);
   const loginId = getLoginInfo();
   renderReservationList(records, mode, loginId);
+  closeAlert();
 }
 
 async function loadMyReservationView() {
+    showAlert("一覧画面処理中...", null, "loading");
     const loginId = getLoginInfo();
     if (!loginId) return;
 
@@ -579,6 +582,7 @@ async function loadMyReservationView() {
     
     // 2. データがある場合は通常通り一覧を描画
     renderReservationList(records, "MY", loginId);
+    closeAlert();
 }
 
 // =========================
@@ -670,6 +674,7 @@ function setupCalendar(startDateRef) {
     minDate: today,
     maxDate: maxDate,
     onSelect: function (dateText) {
+      showAlert("一覧画面処理中...", null, "loading");
       const parts = dateText.split("-");
       const selected = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
       startDateRef.date = selected;
@@ -695,6 +700,7 @@ function setupNavigation(startDateRef) {
 
   if (todayBtn) {
     todayBtn.addEventListener("click", () => {
+      showAlert("一覧画面処理中...", null, "loading");
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       startDateRef.date = today;
@@ -704,6 +710,7 @@ function setupNavigation(startDateRef) {
 
   if (prevWeekBtn) {
     prevWeekBtn.addEventListener("click", () => {
+      showAlert("一覧画面処理中...", null, "loading");
       if (prevWeekBtn.disabled) return;
       startDateRef.date = addDays(startDateRef.date, -7);
       loadWeekView(startDateRef.date, "WEEK");
@@ -712,6 +719,7 @@ function setupNavigation(startDateRef) {
 
   if (nextWeekBtn) {
     nextWeekBtn.addEventListener("click", () => {
+      showAlert("一覧画面処理中...", null, "loading");
       if (nextWeekBtn.disabled) return;
       startDateRef.date = addDays(startDateRef.date, 7);
       loadWeekView(startDateRef.date, "WEEK");
@@ -726,7 +734,7 @@ function setupNavigation(startDateRef) {
         showAlert("My予約を表示するにはログオンが必要です。");
         return;
       }
-      showAlert("My予約を取得中です...", null, "loading");
+      showAlert("一覧画面処理中...", null, "loading");
       try {
         await loadMyReservationView();
         closeAlert();
